@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 7.5 (純淨版)</title>
+    <title>勇者學園對戰平台 7.6 (純淨置中版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -98,10 +98,10 @@
         #btn-1 { background-color: #1368ce; border-bottom: 5px solid #0d4a96;} 
         #btn-2 { background-color: #d89e00; border-bottom: 5px solid #9e7400;} 
         #btn-3 { background-color: #26890c; border-bottom: 5px solid #1a5e08;} 
-        
-        /* 🌟 QR Code 置中修正 */
-        #qrcode { display: flex; justify-content: center; align-items: center; margin: 20px auto; width: 100%; text-align: center; }
-        #qrcode img, #qrcode canvas { margin: 0 auto; }
+
+        /* 🌟 QR Code 核彈級置中修正 */
+        .qr-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; margin: 20px 0; }
+        #qrcode { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block;}
 
         .summary-container { display: flex; flex-direction: column; gap: 20px; text-align: left;}
         .summary-box { flex: 1; background: #fff; padding: 20px; border-radius: 10px; border: 2px solid #ddd;}
@@ -252,7 +252,11 @@
     <div id="screen-teacher-lobby" class="screen-page card hidden" style="max-width: 800px;">
         <h1 id="lobby-game-title">等待勇者集結...</h1>
         <h2 id="lobby-pin-display" style="color:#e21b3c; font-size: 30px;"></h2>
-        <div id="qrcode"></div>
+        
+        <div class="qr-wrapper">
+            <div id="qrcode"></div>
+        </div>
+
         <h2 id="teacher-player-count">已加入勇者：0 人</h2>
         <div class="player-list-box" id="teacher-player-names"></div>
         <button class="btn-danger" style="font-size: 24px; padding: 20px 40px; margin-top: 20px;" onclick="startBattle()">⚔️ 正式開始打怪！ ⚔️</button>
@@ -326,18 +330,16 @@
             <div class="buff-container" id="ui-buff-container"></div>
         </div>
         
-        <div id="quiz-content-area" style="width: 100%;">
-            <div class="card" style="margin-top: 10px; padding-bottom: 10px;">
-                <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
-                <h2 id="question-text" style="margin: 0;">載入中...</h2>
-            </div>
-            
-            <div class="options-container" id="options-box" style="width: 95%; max-width: 800px; margin: 10px auto;">
-                <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
-                <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
-                <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
-                <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
-            </div>
+        <div class="card" style="margin-top: 10px; padding-bottom: 10px;">
+            <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
+            <h2 id="question-text" style="margin: 0;">載入中...</h2>
+        </div>
+        
+        <div class="options-container" id="options-box" style="width: 95%; max-width: 800px; margin: 10px auto;">
+            <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
+            <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
+            <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
+            <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
         </div>
 
         <div class="card" style="margin-top: 10px; background: #fff8e1; border-color: #ffc107;">
