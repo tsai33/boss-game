@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 8.1 (震撼音效版)</title>
+    <title>勇者學園對戰平台 9.1 (大亂鬥版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -58,7 +58,7 @@
         @keyframes ultimate-shake { 0% { transform: scale(1) rotate(0deg); } 20% { transform: scale(1.3) rotate(15deg); } 40% { transform: scale(0.9) rotate(-10deg); } 60% { transform: scale(1.2) rotate(5deg); } 80% { transform: scale(0.95) rotate(-5deg); } 100% { transform: scale(1) rotate(0deg); } }
         
         .hp-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 0px white;}
-        .hp-bar-bg { width: 100%; height: 25px; background-color: #333; border-radius: 15px; border: 3px solid #fff; overflow: hidden; box-shadow: inset 0 0 10px black; margin: 0 auto;}
+        .hp-bar-bg { width: 100%; height: 25px; background-color: #333; border-radius: 15px; border: 3px solid #fff; overflow: hidden; box-shadow: inset 0 0 10px black; margin: 0 auto; position: relative;}
         .hp-bar-fill { height: 100%; transition: width 0.3s ease-out; }
         .boss-fill { background: linear-gradient(90deg, #ff0000, #ff4d4d); width: 100%; }
         .player-fill { background: linear-gradient(90deg, #00b300, #33ff33); width: 100%; }
@@ -114,8 +114,29 @@
         .lb-title { color: #FFD700; margin-top: 0; font-size: 16px; border-bottom: 1px dashed #FFD700; padding-bottom: 5px; text-align: center;}
         .lb-item { margin: 5px 0; font-size: 14px; display: flex; justify-content: space-between; font-weight: bold;}
         .lb-item:first-child { color: #FFD700; font-size: 16px; text-shadow: 0 0 5px #FFD700;} 
-        .lb-item:nth-child(2) { color: #E0E0E0; } 
-        .lb-item:nth-child(3) { color: #CD7F32; } 
+        
+        .f1-track-container { width: 95%; margin: 20px auto; background: #333; border: 5px solid #111; border-radius: 10px; padding: 10px 0; position: relative; overflow: hidden; }
+        .f1-lane { width: 100%; height: 60px; border-bottom: 2px dashed #666; position: relative; display: flex; align-items: center; }
+        .f1-lane:last-child { border-bottom: none; }
+        .f1-car-wrapper { position: absolute; left: 0%; transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; font-size: 40px; filter: drop-shadow(2px 2px 2px black); z-index: 10;}
+        .f1-name-tag { font-size: 14px; color: white; background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 5px; margin-left: -10px; font-weight: bold;}
+        .finish-line { position: absolute; right: 5%; top: 0; bottom: 0; width: 20px; background: repeating-linear-gradient(45deg, white, white 10px, black 10px, black 20px); z-index: 5; border-left: 3px solid #ffeb3b;}
+        
+        .team-red { border-color: #F44336 !important; color: #F44336 !important; }
+        .team-blue { border-color: #2196F3 !important; color: #2196F3 !important; }
+        .team-yellow { border-color: #FFEB3B !important; color: #FBC02D !important; }
+        .team-green { border-color: #4CAF50 !important; color: #4CAF50 !important; }
+        .bg-team-red { background-color: #ffebee !important; }
+        .bg-team-blue { background-color: #e3f2fd !important; }
+        .bg-team-yellow { background-color: #fffde7 !important; }
+        .bg-team-green { background-color: #e8f5e9 !important; }
+        
+        .nitro-fire { position: absolute; left: -25px; top: 15px; font-size: 30px; animation: pulse-fast 0.2s infinite; display: none; }
+        .is-nitro .nitro-fire { display: block; }
+
+        /* 🌟 香蕉皮打滑特效 */
+        @keyframes spin-car { 100% { transform: rotate(360deg); } }
+        .spin-effect { animation: spin-car 0.5s linear 2 !important; }
 
         .bomb-icon { font-size: 100px; animation: bomb-shake 0.5s infinite; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));}
         .wire-fill { background: linear-gradient(90deg, #2196f3, #00bcd4) !important; }
@@ -147,6 +168,9 @@
             .lb-item:first-child { font-size: 20px; }
             .log-toast { font-size: 24px; padding: 15px 25px; }
             .bomb-icon { font-size: 150px; }
+            .f1-car-wrapper { font-size: 60px; }
+            .f1-lane { height: 80px; }
+            .nitro-fire { font-size: 40px; left: -35px; top: 20px; }
         }
     </style>
 </head>
@@ -159,6 +183,8 @@
     <audio id="sfx-heal" src="https://actions.google.com/sounds/v1/water/water_bubble.ogg" preload="auto"></audio>
     <audio id="sfx-buy" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
     <audio id="sfx-ultimate" src="https://actions.google.com/sounds/v1/explosions/big_explosion.ogg" preload="auto"></audio>
+    <audio id="sfx-nitro" src="https://actions.google.com/sounds/v1/transportation/car_pass_by.ogg" preload="auto"></audio>
+    <audio id="sfx-slip" src="https://actions.google.com/sounds/v1/cartoon/slip_and_crash.ogg" preload="auto"></audio>
 
     <div id="screen-home" class="screen-page card">
         <h1>🎮 勇者學園對戰平台</h1>
@@ -180,6 +206,7 @@
         <select id="teacher-game-type" onchange="toggleGameSettings()" style="width: 100%; border: 3px solid #607D8B; font-weight: bold; color: #333; font-size: 22px; margin-bottom: 15px; background-color: #ECEFF1;">
             <option value="boss_battle">⚔️ 模式一：勇者大戰魔王 (全班同步)</option>
             <option value="bomb_defusal">💣 模式二：生死時速拆彈 (各自解題)</option>
+            <option value="f1_racing">🏎️ 模式三：F1 瑪利歐大亂鬥 (四色陣營)</option>
         </select>
 
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0;">
@@ -189,7 +216,7 @@
 
         <div id="setting-boss" style="display: flex; gap: 15px; width: 100%; margin: 15px 0; padding: 15px; background: #f5f5f5; border-radius: 10px; border: 2px dashed #999;">
             <div style="flex: 1; text-align: left;">
-                <label style="font-weight: bold; color: #1565C0; font-size: 16px;">👥 預計全班人數 (算血量)</label>
+                <label style="font-weight: bold; color: #1565C0; font-size: 16px;">👥 全班人數 (自動算血量)</label>
                 <input type="number" id="teacher-expected-players" value="24" style="border: 2px solid #2196F3; background: #e3f2fd; margin-top: 5px;">
             </div>
             <div style="flex: 1; text-align: left;">
@@ -200,12 +227,23 @@
 
         <div id="setting-bomb" class="hidden" style="display: flex; gap: 15px; width: 100%; margin: 15px 0; padding: 15px; background: #FFF3E0; border-radius: 10px; border: 2px dashed #FF9800;">
             <div style="flex: 1; text-align: left;">
-                <label style="font-weight: bold; color: #E65100; font-size: 16px;">👥 預計全班人數 (算目標題數)</label>
+                <label style="font-weight: bold; color: #E65100; font-size: 16px;">👥 預計人數 (算目標題數)</label>
                 <input type="number" id="teacher-bomb-players" value="24" style="border: 2px solid #FF9800; background: #FFF8E1; margin-top: 5px;">
             </div>
             <div style="flex: 1; text-align: left;">
-                <label style="font-weight: bold; color: #D32F2F; font-size: 16px;">⏱️ 炸彈倒數時間 (分鐘)</label>
+                <label style="font-weight: bold; color: #D32F2F; font-size: 16px;">⏱️ 炸彈倒數 (分鐘)</label>
                 <input type="number" id="teacher-bomb-time" value="5" style="border: 2px solid #D32F2F; background: #FFEBEE; margin-top: 5px;">
+            </div>
+        </div>
+
+        <div id="setting-f1" class="hidden" style="display: flex; gap: 15px; width: 100%; margin: 15px 0; padding: 15px; background: #E8F5E9; border-radius: 10px; border: 2px dashed #4CAF50;">
+            <div style="flex: 1; text-align: left;">
+                <label style="font-weight: bold; color: #2E7D32; font-size: 16px;">🏁 車隊終點里程數</label>
+                <input type="number" id="teacher-f1-dist" value="1000" style="border: 2px solid #4CAF50; background: #F1F8E9; margin-top: 5px;">
+            </div>
+            <div style="flex: 1; text-align: left;">
+                <label style="font-weight: bold; color: #e21b3c; font-size: 16px;">⏳ 每題作答時間 (秒)</label>
+                <input type="number" id="teacher-f1-time" value="60" style="border: 2px solid #e21b3c; background: #ffebee; margin-top: 5px;">
             </div>
         </div>
         
@@ -249,11 +287,11 @@
         <div class="qr-wrapper"><div id="qrcode"></div></div>
         <h2 id="teacher-player-count">已加入勇者：0 人</h2>
         <div class="player-list-box" id="teacher-player-names"></div>
-        <button class="btn-danger" style="font-size: 24px; padding: 20px 40px; margin-top: 20px;" onclick="startBattle()">⚔️ 正式開始任務！ ⚔️</button>
+        <button class="btn-danger" style="font-size: 24px; padding: 20px 40px; margin-top: 20px;" onclick="startBattle()">🚀 正式開始遊戲！ 🚀</button>
     </div>
 
     <div id="screen-login" class="screen-page card hidden">
-        <h1>🛡️ 勇者登入區</h1>
+        <h1>🛡️ 登入區</h1>
         <input type="text" id="student-pin" placeholder="請輸入 PIN 碼">
         <input type="text" id="student-name" placeholder="請輸入暱稱">
         <button class="btn-student" onclick="joinLobby()">進入集結大廳</button>
@@ -262,68 +300,79 @@
 
     <div id="screen-student-lobby" class="screen-page card hidden">
         <h1 id="student-lobby-name"></h1>
+        <h3 id="student-lobby-team" style="font-size: 24px; margin-top: 5px;"></h3>
         <h2>⏳ 正在等待老師開始遊戲...</h2>
         <p style="color: #666; font-weight: bold;">請抬頭看黑板大螢幕確認名字！</p>
     </div>
 
     <div id="screen-projector-boss" class="screen-page card hidden" style="max-width: 900px; background: rgba(0,0,0,0.8); color: white; border: none; position: relative;">
-        <div id="projector-leaderboard-boss" class="leaderboard-box hidden">
-            <h3 class="lb-title">🏆 累積傷害排行</h3>
-            <div id="lb-list-boss">等待勇者攻擊...</div>
-        </div>
+        <div id="projector-leaderboard-boss" class="leaderboard-box hidden"><h3 class="lb-title">🏆 累積傷害排行</h3><div id="lb-list-boss">等待攻擊...</div></div>
         <div id="projector-log-container-boss" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
-
         <div style="width: 90%; margin: 0 auto 20px auto; z-index: 10; position: relative;">
             <div style="color: #00E676; font-size: 22px; font-weight: bold; text-shadow: 1px 1px 2px black; text-align: left; margin-bottom: 5px;">✨ 全班集氣條 <span id="proj-energy-text">0%</span></div>
-            <div class="hp-bar-bg" style="height: 25px; border-color: #00E676;">
-                <div id="proj-energy-fill" class="hp-bar-fill" style="background: linear-gradient(90deg, #00C853, #B2FF59); width: 0%;"></div>
-            </div>
+            <div class="hp-bar-bg" style="height: 25px; border-color: #00E676;"><div id="proj-energy-fill" class="hp-bar-fill" style="background: linear-gradient(90deg, #00C853, #B2FF59); width: 0%;"></div></div>
             <button id="btn-ultimate" class="hidden" style="background: #FFEA00; color: #D84315; font-size: 28px; padding: 15px 30px; width: 100%; border-radius: 10px; margin-top: 15px; animation: pulse 0.5s infinite; border: 3px solid #FF6D00; cursor: pointer; text-shadow: 1px 1px 0px white;" onclick="fireUltimate()">☄️ 發動！全班大絕招 ☄️</button>
         </div>
-
         <h1 style="color: #ffcc00; text-shadow: 0 0 10px #ffcc00; margin-top: 0;">🔥 全班集火攻擊中 🔥</h1>
         <h2 id="proj-rage-warning" class="hidden" style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff; animation: pulse 1s infinite;">⚠️ 魔王進入狂暴狀態！傷害加倍！⚠️</h2>
-        <div id="projector-hit-container" style="display:inline-block; padding:10px;">
-            <img id="projector-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image projector-boss">
-        </div>
+        <div id="projector-hit-container" style="display:inline-block; padding:10px;"><img id="projector-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image projector-boss"></div>
         <div class="hp-text" id="projector-boss-hp-text" style="color: #ff4d4d;">👿 魔王血量</div>
-        <div class="hp-bar-bg" style="width: 80%; height: 40px;">
-            <div id="projector-boss-hp-fill" class="hp-bar-fill boss-fill"></div>
-        </div>
+        <div class="hp-bar-bg" style="width: 80%; height: 40px;"><div id="projector-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
         <button style="margin-top: 30px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 結束戰鬥並觀看戰報</button>
     </div>
 
     <div id="screen-projector-bomb" class="screen-page card hidden" style="max-width: 900px; background: rgba(20,20,20,0.9); color: white; border: 3px solid #e21b3c; position: relative;">
-        <div id="projector-leaderboard-bomb" class="leaderboard-box hidden">
-            <h3 class="lb-title" style="color:#4DD0E1; border-color:#4DD0E1;">🏆 拆彈菁英排行</h3>
-            <div id="lb-list-bomb">等待勇者剪線...</div>
-        </div>
+        <div id="projector-leaderboard-bomb" class="leaderboard-box hidden"><h3 class="lb-title" style="color:#4DD0E1; border-color:#4DD0E1;">🏆 拆彈菁英排行</h3><div id="lb-list-bomb">等待剪線...</div></div>
         <div id="projector-log-container-bomb" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
-
         <h1 style="color: #FF5252; font-size: 40px; text-shadow: 0 0 15px red; margin-top: 20px;">💣 生死時速拆彈任務 💣</h1>
         <div class="bomb-icon">🧨</div>
-        
         <div style="background: rgba(255,0,0,0.1); padding: 20px; border-radius: 15px; border: 2px solid #FF5252; margin: 20px auto; width: 80%;">
-            <div style="font-size: 22px; color: #FFCDD2; margin-bottom: 10px;">⏳ 炸彈倒數計時</div>
-            <div id="proj-bomb-timer" class="bomb-timer">05:00.0</div>
+            <div style="font-size: 22px; color: #FFCDD2; margin-bottom: 10px;">⏳ 炸彈倒數計時</div><div id="proj-bomb-timer" class="bomb-timer">05:00.0</div>
         </div>
-
         <div style="width: 80%; margin: 30px auto;">
             <div class="hp-text" id="proj-wire-text" style="color: #4DD0E1;">✂️ 全班拆除進度 (0 / 100)</div>
-            <div class="hp-bar-bg" style="height: 40px; border-color: #4DD0E1; background: #111;">
-                <div id="proj-wire-fill" class="hp-bar-fill wire-fill" style="width: 0%;"></div>
-            </div>
+            <div class="hp-bar-bg" style="height: 40px; border-color: #4DD0E1; background: #111;"><div id="proj-wire-fill" class="hp-bar-fill wire-fill" style="width: 0%;"></div></div>
         </div>
         <button style="margin-top: 20px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 強制終止任務</button>
+    </div>
+
+    <div id="screen-projector-f1" class="screen-page card hidden" style="max-width: 1000px; width: 95%; background: rgba(30,30,30,0.95); color: white; border: 4px solid #4CAF50; position: relative; padding: 10px;">
+        <h1 style="color: #4CAF50; text-shadow: 0 0 10px #4CAF50; font-size: 36px; margin: 10px 0;">🏎️ 車隊爭霸大亂鬥 🏎️</h1>
+        <div id="projector-log-container-f1" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
+        
+        <div style="font-size: 20px; color: #ccc; margin-bottom: 10px;">🏁 目標里程：<span id="proj-f1-target" style="color:#FFEB3B; font-weight:bold;">1000</span> m</div>
+
+        <div class="f1-track-container">
+            <div class="finish-line"></div>
+            <div class="f1-lane">
+                <div id="f1-car-red" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#F44336;">火龍</span></div>
+            </div>
+            <div class="f1-lane">
+                <div id="f1-car-blue" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#2196F3;">冰狼</span></div>
+            </div>
+            <div class="f1-lane">
+                <div id="f1-car-yellow" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#FFEB3B;">雷豹</span></div>
+            </div>
+            <div class="f1-lane">
+                <div id="f1-car-green" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#4CAF50;">風鷹</span></div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-around; margin-top: 10px; font-size: 20px; font-weight: bold;">
+            <div style="color: #F44336;">🔴 火龍: <span id="score-red">0</span></div>
+            <div style="color: #2196F3;">🔵 冰狼: <span id="score-blue">0</span></div>
+            <div style="color: #FFEB3B;">🟡 雷豹: <span id="score-yellow">0</span></div>
+            <div style="color: #4CAF50;">🟢 風鷹: <span id="score-green">0</span></div>
+        </div>
+        
+        <button style="margin-top: 20px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 結束比賽並觀看戰報</button>
     </div>
 
     <div id="screen-game" class="screen-page hidden" style="width: 100%; padding: 0;">
         
         <div id="ui-boss-zone" class="card" style="margin-top: 0;">
             <h2 id="display-player-name-boss" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
-            <div id="student-hit-container" style="display:inline-block; padding:5px;">
-                <img id="student-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image">
-            </div>
+            <div id="student-hit-container" style="display:inline-block; padding:5px;"><img id="student-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image"></div>
             <h3 id="student-rage-warning" class="hidden" style="color: #ff00ff; margin: 0;">⚠️ 狂暴狀態：答錯扣血加倍！</h3>
             <div class="hp-text boss-color" id="student-boss-hp-text">👿 魔王血量</div>
             <div class="hp-bar-bg"><div id="student-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
@@ -334,6 +383,13 @@
             <div style="font-size: 60px; margin: 10px 0;">💣</div>
             <div style="font-size: 20px; font-weight: bold; color: #c62828; margin-bottom: 10px;">⚠️ 快解題！答對加時，答錯扣秒！</div>
             <div class="hp-text" id="student-bomb-progress-text" style="color: #00838F;">✂️ 個人進度: 0 / 10</div>
+        </div>
+
+        <div id="ui-f1-zone" class="card hidden" style="margin-top: 0;">
+            <h2 id="display-player-name-f1" style="margin-top:0;">車手 </h2>
+            <div style="font-size: 60px; margin: 10px 0;">🏎️</div>
+            <div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;" id="f1-team-cheer">⛽ 努力答題，幫車隊衝刺！</div>
+            <div class="hp-text" id="student-f1-progress-text">🏆 車隊里程: 0 m</div>
         </div>
         
         <div class="card" style="margin-top: 10px;">
@@ -352,7 +408,7 @@
         </div>
         
         <div id="quiz-content-area" style="width: 100%;">
-            <div class="card" style="margin-top: 10px; padding-bottom: 10px;">
+            <div class="card" id="timer-card" style="margin-top: 10px; padding-bottom: 10px;">
                 <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
                 <h2 id="question-text" style="margin: 0;">載入中...</h2>
             </div>
@@ -367,15 +423,25 @@
 
         <div class="card" style="margin-top: 10px; background: #fff8e1; border-color: #ffc107;">
             <h3 style="margin: 0 0 5px 0; color: #f57f17;">🏪 魔法商城</h3>
+            
             <div id="shop-boss" class="shop-container">
                 <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 30)">⚔️ 會心一擊<br><span style="font-size:12px; color:#f57f17;">(30G)</span></button>
                 <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 40)">🛡️ 絕對防禦<br><span style="font-size:12px; color:#f57f17;">(40G)</span></button>
             </div>
+            
             <div id="shop-bomb" class="shop-container hidden">
                 <button class="shop-item" id="btn-shop-timeadd" onclick="buyItem('timeadd', 30)">🕒 時間精華<br><span style="font-size:12px; color:#f57f17;">(+10秒 30G)</span></button>
                 <button class="shop-item" id="btn-shop-bombshield" onclick="buyItem('bombshield', 40)">🛡️ 防爆盾牌<br><span style="font-size:12px; color:#f57f17;">(擋扣秒 40G)</span></button>
                 <button class="shop-item" id="btn-shop-skip" onclick="buyItem('skip', 60)">✂️ 萬能剪刀<br><span style="font-size:12px; color:#f57f17;">(秒殺此題 60G)</span></button>
             </div>
+
+            <div id="shop-f1" class="shop-container hidden">
+                <button class="shop-item" id="btn-shop-nitro" onclick="buyItem('nitro', 30)">🔥 氮氣加速<br><span style="font-size:12px; color:#f57f17;">(狂飆 30G)</span></button>
+                <button class="shop-item" id="btn-shop-banana" onclick="buyItem('banana', 40)">🍌 香蕉皮<br><span style="font-size:12px; color:#f57f17;">(絆倒第一名 40G)</span></button>
+                <button class="shop-item" id="btn-shop-blueshell" onclick="buyItem('blueshell', 80)">🐢 藍色龜殼<br><span style="font-size:12px; color:#f57f17;">(轟炸第一名 80G)</span></button>
+            </div>
+
+            <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5;">🎒 喝生命藥水 (擁有: 0瓶)</button>
         </div>
     </div>
 
@@ -384,7 +450,7 @@
         <button class="btn-primary" style="background-color: #217346; margin-bottom: 20px; font-size: 18px;" onclick="exportToCSV()">📥 下載全班成績單 (Excel)</button>
         <div class="summary-container">
             <div class="summary-box">
-                <h2 style="color: #4CAF50; margin-top: 0;">🏆 MVP (前五名)</h2>
+                <h2 style="color: #4CAF50; margin-top: 0;">🏆 優秀名單 (前五名)</h2>
                 <ul class="summary-list" id="mvp-list"></ul>
             </div>
             <div class="summary-box">
@@ -402,7 +468,7 @@
         <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
             <h2 id="my-final-score" style="color: #1565C0; margin: 0;">你的成績結算中...</h2>
         </div>
-        <h3 style="color: #4CAF50; text-align: left;">🏆 班級 MVP 前五名</h3>
+        <h3 style="color: #4CAF50; text-align: left;">🏆 班級優秀前五名</h3>
         <ul class="summary-list" id="student-mvp-list" style="text-align: left;"></ul>
     </div>
 
@@ -429,17 +495,19 @@
         let hasBuffDmg = false; let hasBuffShield = false; 
         
         let bossTotalHP = 1000; let bossHP = bossTotalHP; let isBossEnraged = false; 
+        let bombEndTime = 0; let globalWiresCut = 0; let targetWires = 100;
         
-        let bombEndTime = 0;
-        let globalWiresCut = 0;
-        let targetWires = 100;
+        let f1Teams = ['red', 'blue', 'yellow', 'green'];
+        let myF1Team = '';
+        let f1TargetDist = 1000;
+        let teamNames = { 'red': '🔴 火龍', 'blue': '🔵 冰狼', 'yellow': '🟡 雷豹', 'green': '🟢 風鷹' };
         
         let currentRole = ""; 
         let timeLeft = 60; let timeLimitSetting = 60; let timerInterval;
         let myPlayerId = ""; let myPlayerName = ""; 
 
         function silentUnlockAudio() {
-            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-heal', 'sfx-buy', 'sfx-ultimate'].forEach(id => {
+            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-heal', 'sfx-buy', 'sfx-ultimate', 'sfx-nitro', 'sfx-slip'].forEach(id => {
                 let audio = document.getElementById(id);
                 if (audio) { audio.volume = 0; audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio.volume = 1; }).catch(() => {}); }
             });
@@ -452,21 +520,26 @@
 
         function toggleGameSettings() {
             const type = document.getElementById('teacher-game-type').value;
+            document.getElementById('setting-boss').classList.add('hidden');
+            document.getElementById('setting-bomb').classList.add('hidden');
+            document.getElementById('setting-f1').classList.add('hidden');
+
             if (type === 'boss_battle') {
                 document.getElementById('setting-boss').classList.remove('hidden');
-                document.getElementById('setting-bomb').classList.add('hidden');
-                document.getElementById('setting-hint').innerText = "💡 系統會根據「全班人數」與您建立的「題目數量」自動為您計算最完美的魔王血量！";
-            } else {
-                document.getElementById('setting-boss').classList.add('hidden');
+                document.getElementById('setting-hint').innerText = "💡 系統會自動為您計算最完美的魔王血量！";
+            } else if (type === 'bomb_defusal') {
                 document.getElementById('setting-bomb').classList.remove('hidden');
-                document.getElementById('setting-hint').innerText = "💡 系統會根據「全班人數」決定總共要剪斷幾根線才能拆除炸彈！";
+                document.getElementById('setting-hint').innerText = "💡 系統會決定總共要剪斷幾根線才能拆除炸彈！";
+            } else if (type === 'f1_racing') {
+                document.getElementById('setting-f1').classList.remove('hidden');
+                document.getElementById('setting-hint').innerText = "💡 建議里程數：(題數 × 10)。誰先跑到終點誰獲勝！";
             }
         }
 
         function verifyTeacherPassword() {
             const pwdInput = document.getElementById('teacher-pwd-input');
             if (pwdInput.value === "8888") { 
-                pwdInput.value = ""; switchScreen('screen-teacher'); generateRandomPin(); loadQuizList();
+                pwdInput.value = ""; switchScreen('screen-teacher'); generateRandomPin(); loadQuizList(); toggleGameSettings();
             } else { alert("❌ 密碼錯誤！"); pwdInput.value = ""; }
         }
 
@@ -568,16 +641,22 @@
             if (type === 'boss_battle') {
                 let expP = parseInt(document.getElementById('teacher-expected-players').value || 24);
                 let timeL = parseInt(document.getElementById('teacher-time-limit').value || 60);
-                let autoBossHP = Math.max(1000, expP * parsedQuiz.length * 40);
                 gameData.timeLimit = timeL;
-                gameData.bossTotalHP = autoBossHP; gameData.currentBossHP = autoBossHP; gameData.bossEnraged = false;
+                gameData.bossTotalHP = Math.max(1000, expP * parsedQuiz.length * 40);
+                gameData.currentBossHP = gameData.bossTotalHP; gameData.bossEnraged = false;
                 gameData.classEnergy = 0; gameData.ultimateFired = false;
             } else if (type === 'bomb_defusal') {
                 let expP = parseInt(document.getElementById('teacher-bomb-players').value || 24);
-                let bombMins = parseInt(document.getElementById('teacher-bomb-time').value || 5);
-                gameData.bombMinutes = bombMins;
+                gameData.bombMinutes = parseInt(document.getElementById('teacher-bomb-time').value || 5);
                 gameData.targetWires = expP * parsedQuiz.length; 
                 gameData.wiresCut = 0;
+            } else if (type === 'f1_racing') {
+                gameData.timeLimit = parseInt(document.getElementById('teacher-f1-time').value || 60);
+                gameData.f1TargetDist = parseInt(document.getElementById('teacher-f1-dist').value || 1000);
+                gameData.f1Teams = {
+                    red: { progress: 0, isNitro: false }, blue: { progress: 0, isNitro: false },
+                    yellow: { progress: 0, isNitro: false }, green: { progress: 0, isNitro: false }
+                };
             }
 
             gameRef.set(gameData).then(() => {
@@ -592,28 +671,33 @@
             gameRef.child('players').on('value', snap => {
                 let players = snap.val() || {};
                 document.getElementById('teacher-player-count').innerText = `已加入：${Object.keys(players).length} 人`;
-                document.getElementById('teacher-player-names').innerHTML = Object.values(players).map(p => `<span class="player-tag">${p.name}</span>`).join('');
+                document.getElementById('teacher-player-names').innerHTML = Object.values(players).map(p => {
+                    let colorCode = '#2196f3';
+                    if(p.f1Team === 'red') colorCode = '#F44336';
+                    if(p.f1Team === 'yellow') colorCode = '#FBC02D';
+                    if(p.f1Team === 'green') colorCode = '#4CAF50';
+                    return `<span class="player-tag" style="background:${colorCode};">${p.name}</span>`;
+                }).join('');
             });
         }
 
         function startBattle() { 
             silentUnlockAudio(); 
-            
             if (currentGameType === 'bomb_defusal') {
                 gameRef.once('value', snap => {
                     let d = snap.val();
                     let endTimeMs = Date.now() + (d.bombMinutes * 60 * 1000);
                     gameRef.update({ status: 'playing', bombEndTime: endTimeMs }).then(() => {
-                        switchScreen('screen-projector-bomb');
-                        document.getElementById('projector-leaderboard-bomb').classList.remove('hidden');
-                        startGameListener();
+                        switchScreen('screen-projector-bomb'); document.getElementById('projector-leaderboard-bomb').classList.remove('hidden'); startGameListener();
                     });
                 });
+            } else if (currentGameType === 'f1_racing') {
+                gameRef.child('status').set('playing').then(() => { 
+                    switchScreen('screen-projector-f1'); updateRPGUI(); startGameListener(); 
+                }); 
             } else {
                 gameRef.child('status').set('playing').then(() => { 
-                    switchScreen('screen-projector-boss'); 
-                    document.getElementById('projector-leaderboard-boss').classList.remove('hidden');
-                    updateRPGUI(); startGameListener(); 
+                    switchScreen('screen-projector-boss'); document.getElementById('projector-leaderboard-boss').classList.remove('hidden'); updateRPGUI(); startGameListener(); 
                 }); 
             }
         }
@@ -638,15 +722,30 @@
                     playerGold = 0; playerCombo = 0; hasBuffDmg = false; hasBuffShield = false; myTotalDamage = 0; myCorrectCount = 0; myWrongCount = 0;
                     myPlayerName = playerName; myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
                     
+                    let playerData = { name: playerName, correct: 0, wrong: 0, damage: 0 };
+
                     if(currentGameType === 'boss_battle') {
                         bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; timeLimitSetting = data.timeLimit || 60;
                         playerMaxHP = quizData.length * 50; playerHP = playerMaxHP;
-                    } else {
+                    } else if (currentGameType === 'bomb_defusal') {
                         targetWires = data.targetWires; globalWiresCut = 0;
+                    } else if (currentGameType === 'f1_racing') {
+                        myF1Team = f1Teams[Math.floor(Math.random() * f1Teams.length)];
+                        playerData.f1Team = myF1Team;
+                        f1TargetDist = data.f1TargetDist || 1000;
+                        timeLimitSetting = data.timeLimit || 60;
                     }
 
-                    gameRef.child('players').child(myPlayerId).set({ name: playerName, correct: 0, wrong: 0, damage: 0 });
+                    gameRef.child('players').child(myPlayerId).set(playerData);
+                    
                     document.getElementById('student-lobby-name').innerText = `嗨，${playerName}！`;
+                    if(currentGameType === 'f1_racing') {
+                        document.getElementById('student-lobby-team').innerText = `歡迎加入 ${teamNames[myF1Team]} 車隊！`;
+                        document.getElementById('student-lobby-team').className = `team-${myF1Team}`;
+                    } else {
+                        document.getElementById('student-lobby-team').innerText = "";
+                    }
+
                     switchScreen('screen-student-lobby'); listenToGameStart();
                 } else { alert("PIN碼錯誤或遊戲已開始！"); }
             });
@@ -656,28 +755,44 @@
             gameRef.child('status').on('value', snap => { 
                 let status = snap.val();
                 if (status === 'playing' && currentRole === 'student') { 
-                    currentQuestionIndex = 0; 
-                    switchScreen('screen-game'); 
+                    currentQuestionIndex = 0; switchScreen('screen-game'); 
                     
+                    document.getElementById('ui-boss-zone').classList.add('hidden');
+                    document.getElementById('ui-bomb-zone').classList.add('hidden');
+                    document.getElementById('ui-f1-zone').classList.add('hidden');
+                    document.getElementById('shop-boss').classList.add('hidden');
+                    document.getElementById('shop-bomb').classList.add('hidden');
+                    document.getElementById('shop-f1').classList.add('hidden');
+                    document.getElementById('hp-exp-zone').classList.remove('hidden');
+                    document.getElementById('timer-card').classList.remove('hidden');
+
                     if (currentGameType === 'bomb_defusal') {
-                        document.getElementById('ui-boss-zone').classList.add('hidden');
                         document.getElementById('ui-bomb-zone').classList.remove('hidden');
-                        document.getElementById('shop-boss').classList.add('hidden');
                         document.getElementById('shop-bomb').classList.remove('hidden');
                         document.getElementById('hp-exp-zone').classList.add('hidden'); 
-                        document.getElementById('timer-display').classList.add('hidden'); 
+                        document.getElementById('timer-card').classList.add('hidden'); 
                         document.getElementById('display-player-name-bomb').innerText = `特務 ${myPlayerName}`;
+                    } else if (currentGameType === 'f1_racing') {
+                        document.getElementById('ui-f1-zone').classList.remove('hidden');
+                        document.getElementById('shop-f1').classList.remove('hidden');
+                        document.getElementById('hp-exp-zone').classList.add('hidden'); 
+                        document.getElementById('display-player-name-f1').innerText = `車手 ${myPlayerName}`;
+                        document.getElementById('ui-f1-zone').classList.add(`bg-team-${myF1Team}`);
+                        document.getElementById('ui-f1-zone').classList.add(`team-${myF1Team}`);
                     } else {
+                        document.getElementById('ui-boss-zone').classList.remove('hidden');
+                        document.getElementById('shop-boss').classList.remove('hidden');
                         document.getElementById('display-player-name-boss').innerHTML = `${myPlayerName} <span id="ui-level" class="lvl-badge">Lv.1</span>`;
                     }
                     
                     updateRPGUI(); startGameListener(); loadQuestion(); 
                 }
                 
-                if ((status === 'finished' || status === 'exploded' || status === 'defused') && currentRole === 'student') { 
+                if ((status === 'finished' || status === 'exploded' || status === 'defused' || status === 'f1_finished') && currentRole === 'student') { 
                     clearInterval(timerInterval); 
                     if(status === 'exploded') document.getElementById('summary-title-student').innerText = "💥 任務失敗，炸彈爆炸了！";
                     if(status === 'defused') document.getElementById('summary-title-student').innerText = "🎉 任務成功！炸彈已拆除！";
+                    if(status === 'f1_finished') document.getElementById('summary-title-student').innerText = "🏁 比賽結束！請看大螢幕冠軍！";
                     generateStudentSummary(); 
                 }
             });
@@ -685,6 +800,34 @@
 
         function buyItem(type, cost) {
             if (playerGold < cost) return;
+            
+            // 🌟 處理陷害系道具 (香蕉皮/藍龜殼)
+            if (type === 'banana' || type === 'blueshell') {
+                gameRef.child('f1Teams').once('value', snap => {
+                    let teams = snap.val();
+                    if(!teams) return;
+                    let targetTeam = ''; let maxProg = -1;
+                    // 尋找跑最前面且「不是自己」的車隊
+                    for(let t in teams) {
+                        if (t !== myF1Team && teams[t].progress > maxProg) {
+                            maxProg = teams[t].progress; targetTeam = t;
+                        }
+                    }
+                    if (targetTeam) {
+                        playerGold -= cost; // 確定有目標才扣錢
+                        let sfxBuy = document.getElementById('sfx-buy'); if(sfxBuy) { sfxBuy.currentTime = 0; sfxBuy.play().catch(()=>{}); }
+                        
+                        let penalty = (type === 'banana') ? 30 : 100;
+                        gameRef.child('f1Teams').child(targetTeam).child('progress').transaction(p => Math.max(0, (p||0) - penalty));
+                        gameRef.child('combatLogs').push({ name: myPlayerName, type: type, targetTeamName: teamNames[targetTeam], targetTeamId: targetTeam, timestamp: Date.now() });
+                        updateRPGUI();
+                    } else {
+                        alert("⚠️ 目前沒有可陷害的敵方車隊！");
+                    }
+                });
+                return; // 非同步處理完畢就離開
+            }
+
             playerGold -= cost;
             let sfxBuy = document.getElementById('sfx-buy'); if(sfxBuy) { sfxBuy.currentTime = 0; sfxBuy.play().catch(()=>{}); }
 
@@ -693,20 +836,28 @@
             else if (type === 'timeadd') {
                 gameRef.child('bombEndTime').transaction(t => t + 10000);
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'timeadd', timestamp: Date.now() });
-                alert("🕒 奉獻時間精華！全班倒數時間增加 10 秒！");
             } 
             else if (type === 'skip') {
-                alert("✂️ 使用萬能剪刀！直接剪斷此線！");
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'skip', timestamp: Date.now() });
-                checkAnswer(quizData[currentQuestionIndex].correctIndex); 
-                return; 
+                checkAnswer(quizData[currentQuestionIndex].correctIndex); return; 
+            }
+            else if (type === 'nitro') {
+                let sfxNitro = document.getElementById('sfx-nitro'); if(sfxNitro) { sfxNitro.currentTime = 0; sfxNitro.play().catch(()=>{}); }
+                gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 50);
+                gameRef.child('f1Teams').child(myF1Team).child('isNitro').set(true);
+                setTimeout(() => { gameRef.child('f1Teams').child(myF1Team).child('isNitro').set(false); }, 2000);
+                gameRef.child('combatLogs').push({ name: myPlayerName, type: 'nitro', team: teamNames[myF1Team], timestamp: Date.now() });
             }
             updateRPGUI();
         }
 
         function showProjectorLog(msg, color, mode) {
-            const containerId = mode === 'bomb' ? 'projector-log-container-bomb' : 'projector-log-container-boss';
+            let containerId = 'projector-log-container-boss';
+            if (mode === 'bomb') containerId = 'projector-log-container-bomb';
+            if (mode === 'f1') containerId = 'projector-log-container-f1';
+            
             const container = document.getElementById(containerId);
+            if(!container) return;
             const toast = document.createElement('div'); toast.className = 'log-toast'; toast.style.borderColor = color; toast.style.color = color; toast.innerText = msg;
             container.appendChild(toast); setTimeout(() => { if(toast.parentElement) toast.parentElement.removeChild(toast); }, 4000);
         }
@@ -733,7 +884,7 @@
                     document.getElementById('btn-shop-dmg').disabled = (playerGold < 30 || hasBuffDmg);
                     document.getElementById('btn-shop-shield').disabled = (playerGold < 40 || hasBuffShield);
                 }
-            } else {
+            } else if (currentGameType === 'bomb_defusal') {
                 if (currentRole === 'student') {
                     document.getElementById('student-bomb-progress-text').innerText = `✂️ 個人進度: ${myCorrectCount} / ${quizData.length}`;
                     document.getElementById('btn-shop-timeadd').disabled = (playerGold < 30);
@@ -743,6 +894,12 @@
                     let wPercent = Math.min(100, (globalWiresCut / targetWires) * 100);
                     document.getElementById('proj-wire-fill').style.width = wPercent + '%';
                     document.getElementById('proj-wire-text').innerText = `✂️ 全班拆除進度 (${globalWiresCut} / ${targetWires})`;
+                }
+            } else if (currentGameType === 'f1_racing') {
+                if (currentRole === 'student') {
+                    document.getElementById('btn-shop-nitro').disabled = (playerGold < 30);
+                    document.getElementById('btn-shop-banana').disabled = (playerGold < 40);
+                    document.getElementById('btn-shop-blueshell').disabled = (playerGold < 80);
                 }
             }
 
@@ -793,66 +950,99 @@
                             let msLeft = bombEndTime - Date.now();
                             if (msLeft <= 0) {
                                 document.getElementById('proj-bomb-timer').innerText = "00:00.0";
-                                
-                                // 🌟 炸彈爆炸：播放震撼音效與畫面紅光
-                                const sfxUlt = document.getElementById('sfx-ultimate'); 
-                                if(sfxUlt) { sfxUlt.currentTime = 0; sfxUlt.play().catch(()=>{}); }
+                                const sfxUlt = document.getElementById('sfx-ultimate'); if(sfxUlt) { sfxUlt.currentTime = 0; sfxUlt.play().catch(()=>{}); }
                                 document.body.style.backgroundColor = "#B71C1C"; 
-                                
-                                gameRef.child('status').set('exploded').then(() => { triggerBombEnd('exploded'); });
-                                clearInterval(timerInterval);
+                                gameRef.child('status').set('exploded').then(() => { triggerBombEnd('exploded'); }); clearInterval(timerInterval);
                             } else {
                                 let mins = Math.floor(msLeft / 60000); let secs = Math.floor((msLeft % 60000) / 1000); let dec = Math.floor((msLeft % 1000) / 100);
                                 document.getElementById('proj-bomb-timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${dec}`;
                                 if (msLeft < 30000) document.getElementById('proj-bomb-timer').style.color = '#ff0000';
                             }
-                            
                             if (globalWiresCut >= targetWires) {
-                                // 🌟 炸彈成功拆除：播放勝利音效
-                                const sfxWin = document.getElementById('sfx-levelup'); 
-                                if(sfxWin) { sfxWin.currentTime = 0; sfxWin.play().catch(()=>{}); }
+                                const sfxWin = document.getElementById('sfx-levelup'); if(sfxWin) { sfxWin.currentTime = 0; sfxWin.play().catch(()=>{}); }
                                 document.body.classList.add('flash-gold');
-
-                                gameRef.child('status').set('defused').then(() => { triggerBombEnd('defused'); });
-                                clearInterval(timerInterval);
+                                gameRef.child('status').set('defused').then(() => { triggerBombEnd('defused'); }); clearInterval(timerInterval);
                             }
                         });
                     }, 100);
                 }
+            } else if (currentGameType === 'f1_racing') {
+                gameRef.child('f1Teams').on('value', snap => {
+                    let teamsData = snap.val();
+                    if(!teamsData) return;
+                    f1Teams.forEach(t => {
+                        let prog = teamsData[t].progress || 0;
+                        let isNitro = teamsData[t].isNitro || false;
+                        let percent = Math.min(100, (prog / f1TargetDist) * 100);
+                        
+                        if(currentRole === 'projector') {
+                            document.getElementById(`f1-car-${t}`).style.left = `calc(${percent}% - 40px)`;
+                            document.getElementById(`score-${t}`).innerText = prog;
+                            if(isNitro) document.getElementById(`f1-car-${t}`).classList.add('is-nitro');
+                            else document.getElementById(`f1-car-${t}`).classList.remove('is-nitro');
+                            
+                            if(prog >= f1TargetDist) {
+                                const sfxWin = document.getElementById('sfx-levelup'); if(sfxWin) { sfxWin.currentTime = 0; sfxWin.play().catch(()=>{}); }
+                                document.body.classList.add('flash-gold');
+                                showProjectorLog(`🏁 比賽結束！${teamNames[t]} 奪得冠軍！`, "#FFEB3B", 'f1');
+                                gameRef.child('status').set('f1_finished').then(() => { setTimeout(generateTeacherSummary, 3000); });
+                            }
+                        } else if (currentRole === 'student' && myF1Team === t) {
+                            document.getElementById('student-f1-progress-text').innerText = `🏆 車隊里程: ${prog} / ${f1TargetDist} m`;
+                        }
+                    });
+                });
             }
 
             if (currentRole === 'projector') {
-                let modePrefix = currentGameType === 'boss_battle' ? 'boss' : 'bomb';
+                let modePrefix = 'boss';
+                if(currentGameType === 'bomb_defusal') modePrefix = 'bomb';
+                if(currentGameType === 'f1_racing') modePrefix = 'f1';
+
                 gameRef.child('combatLogs').on('child_added', snap => {
                     let log = snap.val(); if (!log || Date.now() - log.timestamp > 10000) return; 
                     let msg = ""; let color = "";
                     if (log.type === 'critical') { msg = `💥 ${log.name} 發動了 會心一擊！`; color = "#FFD54F"; }
-                    if (log.type === 'shield') { msg = `🛡️ ${log.name} 觸發了 絕對防禦！`; color = "#81C784"; }
+                    if (log.type === 'shield') { msg = `🛡️ ${log.name} 觸發了 護盾！`; color = "#81C784"; }
                     if (log.type === 'timeadd') { msg = `🕒 ${log.name} 奉獻時間！全班 +10秒！`; color = "#4DD0E1"; }
                     if (log.type === 'skip') { msg = `✂️ ${log.name} 使用萬能剪刀秒殺一題！`; color = "#FF9800"; }
+                    if (log.type === 'nitro') { msg = `🔥 ${log.team} 的 ${log.name} 發動了 氮氣加速！`; color = "#FF5722"; }
+                    
+                    // 🌟 陷害大亂鬥廣播與動畫
+                    if (log.type === 'banana') { 
+                        msg = `🍌 ${log.name} 丟出香蕉皮！${log.targetTeamName} 打滑退後！`; color = "#FFEB3B"; 
+                        let sfxSlip = document.getElementById('sfx-slip'); if(sfxSlip) { sfxSlip.currentTime = 0; sfxSlip.play().catch(()=>{}); }
+                        let targetCar = document.getElementById(`f1-car-${log.targetTeamId}`);
+                        if(targetCar) { targetCar.classList.add('spin-effect'); setTimeout(() => targetCar.classList.remove('spin-effect'), 1000); }
+                    }
+                    if (log.type === 'blueshell') { 
+                        msg = `🐢 ${log.name} 發射藍色龜殼！${log.targetTeamName} 遭到毀滅轟炸！`; color = "#2196F3"; 
+                        let sfxUlt = document.getElementById('sfx-ultimate'); if(sfxUlt) { sfxUlt.currentTime = 0; sfxUlt.play().catch(()=>{}); }
+                        let targetCar = document.getElementById(`f1-car-${log.targetTeamId}`);
+                        if(targetCar) { targetCar.classList.add('ultimate-hit'); setTimeout(() => targetCar.classList.remove('ultimate-hit'), 500); }
+                    }
+
                     if (msg) showProjectorLog(msg, color, modePrefix);
                 });
 
-                gameRef.child('players').on('value', snap => {
-                    let players = snap.val() || {};
-                    let lbHtml = "";
-                    if (currentGameType === 'boss_battle') {
-                        let sorted = Object.values(players).sort((a, b) => (b.damage || 0) - (a.damage || 0));
-                        sorted.slice(0, 5).forEach((p, i) => { if((p.damage||0)>0) lbHtml += `<div class="lb-item"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${p.name}</span> <span>${p.damage}</span></div>`; });
-                    } else {
-                        let sorted = Object.values(players).sort((a, b) => (b.correct || 0) - (a.correct || 0));
-                        sorted.slice(0, 5).forEach((p, i) => { if((p.correct||0)>0) lbHtml += `<div class="lb-item"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${p.name}</span> <span>${p.correct} 條</span></div>`; });
-                    }
-                    document.getElementById(`lb-list-${modePrefix}`).innerHTML = lbHtml || '等待中...';
-                });
+                if(currentGameType !== 'f1_racing') {
+                    gameRef.child('players').on('value', snap => {
+                        let players = snap.val() || {}; let lbHtml = "";
+                        if (currentGameType === 'boss_battle') {
+                            let sorted = Object.values(players).sort((a, b) => (b.damage || 0) - (a.damage || 0));
+                            sorted.slice(0, 5).forEach((p, i) => { if((p.damage||0)>0) lbHtml += `<div class="lb-item"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${p.name}</span> <span>${p.damage}</span></div>`; });
+                        } else {
+                            let sorted = Object.values(players).sort((a, b) => (b.correct || 0) - (a.correct || 0));
+                            sorted.slice(0, 5).forEach((p, i) => { if((p.correct||0)>0) lbHtml += `<div class="lb-item"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${p.name}</span> <span>${p.correct} 條</span></div>`; });
+                        }
+                        document.getElementById(`lb-list-${modePrefix}`).innerHTML = lbHtml || '等待中...';
+                    });
+                }
             }
         }
 
-        function triggerGameEnd() { gameRef.child('status').set('finished').then(() => { generateTeacherSummary(); }); }
-        function triggerBombEnd(result) {
-            let title = result === 'exploded' ? "💥 任務失敗！炸彈爆炸！" : "🎉 任務成功！完美拆除！";
-            document.getElementById('summary-title-teacher').innerText = title;
-            generateTeacherSummary();
+        function triggerGameEnd() { 
+            gameRef.child('status').set(currentGameType === 'f1_racing' ? 'f1_finished' : 'finished').then(() => { generateTeacherSummary(); }); 
         }
 
         function startTimer() {
@@ -866,7 +1056,7 @@
 
         function loadQuestion() {
             if (currentQuestionIndex >= quizData.length) { 
-                if (currentGameType === 'boss_battle') { clearInterval(timerInterval); }
+                if (currentGameType !== 'bomb_defusal') { clearInterval(timerInterval); }
                 document.getElementById('question-text').innerText = "作答完畢！請等待結算...";
                 document.getElementById('options-box').classList.add('hidden');
                 return; 
@@ -889,12 +1079,12 @@
                 if(sfxHurt) { setTimeout(() => { sfxHurt.currentTime = 0; sfxHurt.play().catch(() => {}); }, 150); }
                 if (currentGameType === 'boss_battle') {
                     let dmgTaken = isBossEnraged ? 50 : 25; playerHP = Math.max(0, playerHP - dmgTaken); 
-                } else {
+                } else if (currentGameType === 'bomb_defusal') {
                     gameRef.child('bombEndTime').transaction(t => t - 5000);
-                    let warning = document.createElement('div');
-                    warning.innerText = "❌ 剪錯線！全班時間 -5 秒！";
-                    warning.style.cssText = "position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:red; color:white; padding:20px; font-size:30px; border-radius:10px; z-index:999;";
-                    document.body.appendChild(warning); setTimeout(()=>warning.remove(), 1500);
+                    let warning = document.createElement('div'); warning.innerText = "❌ 剪錯線！全班時間 -5 秒！"; warning.style.cssText = "position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:red; color:white; padding:20px; font-size:30px; border-radius:10px; z-index:999;"; document.body.appendChild(warning); setTimeout(()=>warning.remove(), 1500);
+                } else if (currentGameType === 'f1_racing') {
+                    gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => Math.max(0, (p||0) - 10));
+                    let warning = document.createElement('div'); warning.innerText = "❌ 爆胎！車隊退後 10m！"; warning.style.cssText = "position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:#F44336; color:white; padding:20px; font-size:30px; border-radius:10px; z-index:999;"; document.body.appendChild(warning); setTimeout(()=>warning.remove(), 1500);
                 }
             }
             
@@ -905,7 +1095,7 @@
         }
 
         function checkAnswer(idx) {
-            if(currentGameType === 'boss_battle') clearInterval(timerInterval);
+            if(currentGameType !== 'bomb_defusal') clearInterval(timerInterval);
             
             if (idx === quizData[currentQuestionIndex].correctIndex) {
                 playerCombo++; let earnedGold = 10; if (playerCombo >= 3) { earnedGold += 5; } playerGold += earnedGold;
@@ -919,9 +1109,12 @@
                     
                     playerExp += 10; let expNeeded = playerLevel * 30;
                     if (playerExp >= expNeeded) { playerLevel++; playerExp -= expNeeded; let sfxLvl = document.getElementById('sfx-levelup'); if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); } document.body.classList.add('flash-gold'); setTimeout(() => document.body.classList.remove('flash-gold'), 500); }
-                } else {
+                } else if (currentGameType === 'bomb_defusal') {
                     gameRef.child('bombEndTime').transaction(t => t + 3000);
                     gameRef.child('wiresCut').transaction(w => (w || 0) + 1);
+                    document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
+                } else if (currentGameType === 'f1_racing') {
+                    gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 15);
                     document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
                 }
 
@@ -932,18 +1125,14 @@
             } else { handleWrongAnswer(); }
         }
 
-        function toggleDetail(idx) {
-            let detailBox = document.getElementById('q-detail-' + idx);
-            if (detailBox.style.display === 'none' || detailBox.style.display === '') { detailBox.style.display = 'block'; } else { detailBox.style.display = 'none'; }
-        }
-
         function exportToCSV() {
             gameRef.once('value', snap => {
                 const data = snap.val(); if(!data || !data.players) return;
-                let csvContent = "\uFEFF學生姓名,答對題數,答錯題數,獲得經驗值,總輸出傷害\n";
+                let csvContent = "\uFEFF學生姓名,所屬隊伍,答對題數,答錯題數,獲得經驗值/總輸出傷害\n";
                 Object.values(data.players).forEach(p => {
                     let correct = p.correct || 0; let wrong = p.wrong || 0; let exp = correct * 10; let dmg = p.damage || 0;
-                    csvContent += `${p.name},${correct},${wrong},${exp},${dmg}\n`;
+                    let teamStr = p.f1Team ? teamNames[p.f1Team] : '無';
+                    csvContent += `${p.name},${teamStr},${correct},${wrong},${currentGameType==='boss_battle'?dmg:exp}\n`;
                 });
                 let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 let url = URL.createObjectURL(blob); let link = document.createElement("a");
@@ -961,7 +1150,7 @@
                 let sortedByCorrect = [...players].sort((a, b) => (b.correct || 0) - (a.correct || 0));
                 let sortedByWrong = [...players].sort((a, b) => (b.wrong || 0) - (a.wrong || 0));
 
-                let mvpHTML = ""; sortedByCorrect.slice(0, 5).forEach((p, i) => { if((p.correct || 0) > 0) mvpHTML += `<li><span>第 ${i+1} 名：${p.name}</span> <span>✅ ${p.correct} 題</span></li>`; });
+                let mvpHTML = ""; sortedByCorrect.slice(0, 5).forEach((p, i) => { if((p.correct || 0) > 0) mvpHTML += `<li><span>第 ${i+1} 名：${p.name} ${p.f1Team?`(${teamNames[p.f1Team]})`:''}</span> <span>✅ ${p.correct} 題</span></li>`; });
                 document.getElementById('mvp-list').innerHTML = mvpHTML || "<li>無人答對任何題目</li>";
 
                 let helpHTML = ""; sortedByWrong.slice(0, 5).forEach((p, i) => { if((p.wrong || 0) > 0) helpHTML += `<li><span>⚠️ 需要急救：${p.name}</span> <span>❌ 錯 ${p.wrong} 題</span></li>`; });
@@ -972,7 +1161,7 @@
                     let stat = qStats[index] || { correct: 0, wrong: 0 }; let total = (stat.correct || 0) + (stat.wrong || 0); let wrongRate = total === 0 ? 0 : Math.round(((stat.wrong || 0) / total) * 100);
                     let optionsHTML = ""; let labels = ['A', 'B', 'C', 'D'];
                     q.options.forEach((opt, optIdx) => { let isCorrect = (optIdx === q.correctIndex); let optClass = isCorrect ? "q-option q-correct" : "q-option"; let mark = isCorrect ? "✅ " : "⚪ "; optionsHTML += `<div class="${optClass}">${mark}${labels[optIdx]}) ${opt}</div>`; });
-                    statsHTML += `<div class="stat-item" onclick="toggleDetail(${index})"><strong>Q${index+1}: ${q.question} ⬇️</strong><br><span style="color: green;">✔ 答對：${stat.correct || 0} 人</span> | <span style="color: red;">✖ 答錯：${stat.wrong || 0} 人</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${wrongRate}%;"></div></div><div style="text-align: right; font-size: 14px; margin-top: 2px;">錯誤率 ${wrongRate}%</div><div id="q-detail-${index}" class="q-detail-box">${optionsHTML}</div></div>`;
+                    statsHTML += `<div class="stat-item" onclick="document.getElementById('q-detail-${index}').style.display = document.getElementById('q-detail-${index}').style.display === 'block' ? 'none' : 'block'"><strong>Q${index+1}: ${q.question} ⬇️</strong><br><span style="color: green;">✔ 答對：${stat.correct || 0} 人</span> | <span style="color: red;">✖ 答錯：${stat.wrong || 0} 人</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${wrongRate}%;"></div></div><div style="text-align: right; font-size: 14px; margin-top: 2px;">錯誤率 ${wrongRate}%</div><div id="q-detail-${index}" class="q-detail-box">${optionsHTML}</div></div>`;
                 });
                 document.getElementById('question-stats-list').innerHTML = statsHTML;
             });
