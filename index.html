@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 8.0 (雙模式切換版)</title>
+    <title>勇者學園對戰平台 8.1 (震撼音效版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -117,7 +117,6 @@
         .lb-item:nth-child(2) { color: #E0E0E0; } 
         .lb-item:nth-child(3) { color: #CD7F32; } 
 
-        /* 🌟 炸彈模式專屬樣式 */
         .bomb-icon { font-size: 100px; animation: bomb-shake 0.5s infinite; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));}
         .wire-fill { background: linear-gradient(90deg, #2196f3, #00bcd4) !important; }
         @keyframes bomb-shake { 0% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } 100% { transform: rotate(-5deg); } }
@@ -232,7 +231,6 @@
 
             <div id="import-section" class="import-box hidden">
                 <p style="margin-top: 0; font-weight: bold; color: #E65100;">💡 智慧防呆匯入：請直接從 Excel 複製貼上！</p>
-                <p style="margin: 5px 0; font-size: 14px; color: #555;">就算複製到最前面的題號也沒關係，確保最右邊 5 格是「四個選項 + 1個正確答案數字(1~4)」即可。</p>
                 <textarea id="import-textarea" rows="6" placeholder="請將 Excel 內容貼在這裡..." style="width: 100%; border-color: #FFB74D; background: #FFF9C4; padding: 10px; box-sizing: border-box;"></textarea>
                 <button class="btn-warning" onclick="processBatchImport()" style="width: 100%; margin: 10px 0;">✅ 智慧解析並轉換</button>
             </div>
@@ -319,7 +317,6 @@
         <button style="margin-top: 20px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 強制終止任務</button>
     </div>
 
-
     <div id="screen-game" class="screen-page hidden" style="width: 100%; padding: 0;">
         
         <div id="ui-boss-zone" class="card" style="margin-top: 0;">
@@ -327,6 +324,7 @@
             <div id="student-hit-container" style="display:inline-block; padding:5px;">
                 <img id="student-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image">
             </div>
+            <h3 id="student-rage-warning" class="hidden" style="color: #ff00ff; margin: 0;">⚠️ 狂暴狀態：答錯扣血加倍！</h3>
             <div class="hp-text boss-color" id="student-boss-hp-text">👿 魔王血量</div>
             <div class="hp-bar-bg"><div id="student-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
         </div>
@@ -369,12 +367,10 @@
 
         <div class="card" style="margin-top: 10px; background: #fff8e1; border-color: #ffc107;">
             <h3 style="margin: 0 0 5px 0; color: #f57f17;">🏪 魔法商城</h3>
-            
             <div id="shop-boss" class="shop-container">
                 <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 30)">⚔️ 會心一擊<br><span style="font-size:12px; color:#f57f17;">(30G)</span></button>
                 <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 40)">🛡️ 絕對防禦<br><span style="font-size:12px; color:#f57f17;">(40G)</span></button>
             </div>
-            
             <div id="shop-bomb" class="shop-container hidden">
                 <button class="shop-item" id="btn-shop-timeadd" onclick="buyItem('timeadd', 30)">🕒 時間精華<br><span style="font-size:12px; color:#f57f17;">(+10秒 30G)</span></button>
                 <button class="shop-item" id="btn-shop-bombshield" onclick="buyItem('bombshield', 40)">🛡️ 防爆盾牌<br><span style="font-size:12px; color:#f57f17;">(擋扣秒 40G)</span></button>
@@ -424,7 +420,6 @@
         const db = firebase.database();
         const gameRef = db.ref('CurrentGame');
 
-        // 遊戲全域變數
         let currentGameType = "boss_battle";
         let quizData = [];
         let currentQuestionIndex = 0;
@@ -435,7 +430,6 @@
         
         let bossTotalHP = 1000; let bossHP = bossTotalHP; let isBossEnraged = false; 
         
-        // 拆彈專屬變數
         let bombEndTime = 0;
         let globalWiresCut = 0;
         let targetWires = 100;
@@ -456,7 +450,6 @@
             document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // 🌟 教師切換遊戲模式的 UI 處理
         function toggleGameSettings() {
             const type = document.getElementById('teacher-game-type').value;
             if (type === 'boss_battle') {
@@ -559,7 +552,6 @@
             });
         }
 
-        // 🌟 教師發布遊戲 (雙模式邏輯)
         function createGame() {
             const pin = document.getElementById('teacher-pin').value.trim();
             const type = document.getElementById('teacher-game-type').value;
@@ -584,7 +576,7 @@
                 let expP = parseInt(document.getElementById('teacher-bomb-players').value || 24);
                 let bombMins = parseInt(document.getElementById('teacher-bomb-time').value || 5);
                 gameData.bombMinutes = bombMins;
-                gameData.targetWires = expP * parsedQuiz.length; // 目標剪線數
+                gameData.targetWires = expP * parsedQuiz.length; 
                 gameData.wiresCut = 0;
             }
 
@@ -608,7 +600,6 @@
             silentUnlockAudio(); 
             
             if (currentGameType === 'bomb_defusal') {
-                // 拆彈模式設定統一的結束時間戳記
                 gameRef.once('value', snap => {
                     let d = snap.val();
                     let endTimeMs = Date.now() + (d.bombMinutes * 60 * 1000);
@@ -668,14 +659,13 @@
                     currentQuestionIndex = 0; 
                     switchScreen('screen-game'); 
                     
-                    // 🌟 學生端 UI 切換
                     if (currentGameType === 'bomb_defusal') {
                         document.getElementById('ui-boss-zone').classList.add('hidden');
                         document.getElementById('ui-bomb-zone').classList.remove('hidden');
                         document.getElementById('shop-boss').classList.add('hidden');
                         document.getElementById('shop-bomb').classList.remove('hidden');
-                        document.getElementById('hp-exp-zone').classList.add('hidden'); // 拆彈隱藏血量經驗
-                        document.getElementById('timer-display').classList.add('hidden'); // 隱藏單題倒數
+                        document.getElementById('hp-exp-zone').classList.add('hidden'); 
+                        document.getElementById('timer-display').classList.add('hidden'); 
                         document.getElementById('display-player-name-bomb').innerText = `特務 ${myPlayerName}`;
                     } else {
                         document.getElementById('display-player-name-boss').innerHTML = `${myPlayerName} <span id="ui-level" class="lvl-badge">Lv.1</span>`;
@@ -684,7 +674,6 @@
                     updateRPGUI(); startGameListener(); loadQuestion(); 
                 }
                 
-                // 結束判斷
                 if ((status === 'finished' || status === 'exploded' || status === 'defused') && currentRole === 'student') { 
                     clearInterval(timerInterval); 
                     if(status === 'exploded') document.getElementById('summary-title-student').innerText = "💥 任務失敗，炸彈爆炸了！";
@@ -694,7 +683,6 @@
             });
         }
 
-        // 🌟 雙模式商城邏輯
         function buyItem(type, cost) {
             if (playerGold < cost) return;
             playerGold -= cost;
@@ -703,17 +691,15 @@
             if(type === 'dmg') { hasBuffDmg = true; } 
             else if (type === 'shield' || type === 'bombshield') { hasBuffShield = true; } 
             else if (type === 'timeadd') {
-                // 幫全班炸彈加10秒
                 gameRef.child('bombEndTime').transaction(t => t + 10000);
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'timeadd', timestamp: Date.now() });
                 alert("🕒 奉獻時間精華！全班倒數時間增加 10 秒！");
             } 
             else if (type === 'skip') {
-                // 秒殺此題
                 alert("✂️ 使用萬能剪刀！直接剪斷此線！");
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'skip', timestamp: Date.now() });
-                checkAnswer(quizData[currentQuestionIndex].correctIndex); // 強制送出正確答案
-                return; // checkAnswer 會呼叫 updateRPGUI
+                checkAnswer(quizData[currentQuestionIndex].correctIndex); 
+                return; 
             }
             updateRPGUI();
         }
@@ -748,7 +734,6 @@
                     document.getElementById('btn-shop-shield').disabled = (playerGold < 40 || hasBuffShield);
                 }
             } else {
-                // Bomb Mode UI Update
                 if (currentRole === 'student') {
                     document.getElementById('student-bomb-progress-text').innerText = `✂️ 個人進度: ${myCorrectCount} / ${quizData.length}`;
                     document.getElementById('btn-shop-timeadd').disabled = (playerGold < 30);
@@ -761,7 +746,6 @@
                 }
             }
 
-            // 共用狀態更新
             if (currentRole === 'student') {
                 document.getElementById('ui-gold-text').innerText = `💰 金幣: ${playerGold} G`;
                 let comboDisplay = document.getElementById('ui-combo-text');
@@ -774,7 +758,6 @@
             }
         }
 
-        // 🌟 雙模式全域監聽器
         function startGameListener() {
             if (currentGameType === 'boss_battle') {
                 gameRef.child('currentBossHP').on('value', snap => {
@@ -800,11 +783,9 @@
                     });
                 }
             } else if (currentGameType === 'bomb_defusal') {
-                // 拆彈模式專屬監聽
                 gameRef.child('bombEndTime').on('value', snap => { bombEndTime = snap.val(); });
                 gameRef.child('wiresCut').on('value', snap => { globalWiresCut = snap.val() || 0; updateRPGUI(); });
                 
-                // 大螢幕倒數計時器
                 if (currentRole === 'projector') {
                     timerInterval = setInterval(() => {
                         gameRef.child('status').once('value', sSnap => {
@@ -812,17 +793,26 @@
                             let msLeft = bombEndTime - Date.now();
                             if (msLeft <= 0) {
                                 document.getElementById('proj-bomb-timer').innerText = "00:00.0";
+                                
+                                // 🌟 炸彈爆炸：播放震撼音效與畫面紅光
+                                const sfxUlt = document.getElementById('sfx-ultimate'); 
+                                if(sfxUlt) { sfxUlt.currentTime = 0; sfxUlt.play().catch(()=>{}); }
+                                document.body.style.backgroundColor = "#B71C1C"; 
+                                
                                 gameRef.child('status').set('exploded').then(() => { triggerBombEnd('exploded'); });
                                 clearInterval(timerInterval);
                             } else {
                                 let mins = Math.floor(msLeft / 60000); let secs = Math.floor((msLeft % 60000) / 1000); let dec = Math.floor((msLeft % 1000) / 100);
                                 document.getElementById('proj-bomb-timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${dec}`;
-                                // 快爆炸時閃爍
                                 if (msLeft < 30000) document.getElementById('proj-bomb-timer').style.color = '#ff0000';
                             }
                             
-                            // 判斷勝利
                             if (globalWiresCut >= targetWires) {
+                                // 🌟 炸彈成功拆除：播放勝利音效
+                                const sfxWin = document.getElementById('sfx-levelup'); 
+                                if(sfxWin) { sfxWin.currentTime = 0; sfxWin.play().catch(()=>{}); }
+                                document.body.classList.add('flash-gold');
+
                                 gameRef.child('status').set('defused').then(() => { triggerBombEnd('defused'); });
                                 clearInterval(timerInterval);
                             }
@@ -831,7 +821,6 @@
                 }
             }
 
-            // 共用：大螢幕廣播與排行榜
             if (currentRole === 'projector') {
                 let modePrefix = currentGameType === 'boss_battle' ? 'boss' : 'bomb';
                 gameRef.child('combatLogs').on('child_added', snap => {
@@ -867,7 +856,7 @@
         }
 
         function startTimer() {
-            if (currentGameType === 'bomb_defusal') return; // 拆彈模式學生端沒有單題倒數
+            if (currentGameType === 'bomb_defusal') return; 
             clearInterval(timerInterval); timeLeft = timeLimitSetting; document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
             timerInterval = setInterval(() => {
                 timeLeft--; document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
@@ -901,9 +890,7 @@
                 if (currentGameType === 'boss_battle') {
                     let dmgTaken = isBossEnraged ? 50 : 25; playerHP = Math.max(0, playerHP - dmgTaken); 
                 } else {
-                    // 拆彈模式：扣全班時間 5 秒
                     gameRef.child('bombEndTime').transaction(t => t - 5000);
-                    // 顯示個人警告
                     let warning = document.createElement('div');
                     warning.innerText = "❌ 剪錯線！全班時間 -5 秒！";
                     warning.style.cssText = "position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:red; color:white; padding:20px; font-size:30px; border-radius:10px; z-index:999;";
@@ -933,7 +920,6 @@
                     playerExp += 10; let expNeeded = playerLevel * 30;
                     if (playerExp >= expNeeded) { playerLevel++; playerExp -= expNeeded; let sfxLvl = document.getElementById('sfx-levelup'); if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); } document.body.classList.add('flash-gold'); setTimeout(() => document.body.classList.remove('flash-gold'), 500); }
                 } else {
-                    // 拆彈模式：全班時間 +3 秒，進度 +1
                     gameRef.child('bombEndTime').transaction(t => t + 3000);
                     gameRef.child('wiresCut').transaction(w => (w || 0) + 1);
                     document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
@@ -942,7 +928,7 @@
                 updateRPGUI(); myCorrectCount++;
                 gameRef.child('players').child(myPlayerId).update({ correct: myCorrectCount, damage: myTotalDamage });
                 gameRef.child('questionStats').child(currentQuestionIndex).child('correct').transaction(curr => (curr || 0) + 1);
-                currentQuestionIndex++; setTimeout(loadQuestion, 300); // 拆彈模式節奏更快
+                currentQuestionIndex++; setTimeout(loadQuestion, 300); 
             } else { handleWrongAnswer(); }
         }
 
