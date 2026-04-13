@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>勇者學園對戰平台 5.5 (智慧匯入版)</title>
+    <title>勇者學園對戰平台 5.6 (智慧難度版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -152,9 +152,10 @@
         </div>
 
         <div style="display: flex; gap: 10px; width: 100%;">
-            <input type="number" id="teacher-hp" placeholder="設定魔王血量" value="1000" style="flex: 1;">
+            <input type="number" id="teacher-expected-players" placeholder="預計全班人數 (自動計算難度)" value="24" style="flex: 1; border: 2px solid #2196F3; background: #e3f2fd;">
             <input type="number" id="teacher-time-limit" placeholder="每題秒數" value="50" style="flex: 1;">
         </div>
+        <p style="text-align: left; margin: 0 0 10px 5px; font-size: 14px; color: #1565C0; font-weight: bold;">💡 系統會根據「全班人數」與「總題數」自動為您計算最完美的魔王血量！</p>
         
         <div class="save-load-box">
             <h3 style="margin-top: 0; color: #1565C0;">☁️ 雲端題庫中心</h3>
@@ -299,7 +300,8 @@
         let quizData = [];
         let currentQuestionIndex = 0;
         
-        const playerMaxHP = 100;
+        // 🌟 修改：移除固定血量，改為動態變數
+        let playerMaxHP = 100;
         let playerHP = playerMaxHP;
         let playerLevel = 1;
         let playerExp = 0;
@@ -378,45 +380,31 @@
             box.classList.toggle('hidden');
         }
 
-        // 🌟 更新：終極防呆智慧解析引擎
         function processBatchImport() {
             const rawText = document.getElementById('import-textarea').value.trim();
             if(!rawText) { alert("請先貼上 Excel 的內容！"); return; }
             
             let count = 0;
             let failCount = 0;
-            let lines = rawText.split(/\r?\n/); // 支援不同系統的換行符號
+            let lines = rawText.split(/\r?\n/); 
             
             lines.forEach(line => {
-                if(!line.trim()) return; // 略過空白行
-                
-                // 優先使用 Tab 判斷 (Excel 預設)，否則用逗號
+                if(!line.trim()) return; 
                 let separator = line.includes('\t') ? '\t' : ',';
-                
-                // 切割並清除頭尾的空白與 Excel 自動產生的雙引號
                 let cols = line.split(separator).map(c => c.trim().replace(/^"|"$/g, '')); 
                 
-                // 🌟 核心防呆：從「後面」倒數抓取，避免前面多複製了題號或空白欄位！
                 if(cols.length >= 6) {
                     let len = cols.length;
-                    
-                    // 倒數第 1 格：正確答案數字
                     let ans = parseInt(cols[len - 1].replace(/[^0-9]/g, ''));
-                    if(isNaN(ans) || ans < 1 || ans > 4) ans = 1; // 預設防呆
+                    if(isNaN(ans) || ans < 1 || ans > 4) ans = 1; 
                     
-                    // 倒數第 2~5 格：四個選項
-                    let o4 = cols[len - 2];
-                    let o3 = cols[len - 3];
-                    let o2 = cols[len - 4];
-                    let o1 = cols[len - 5];
-                    
-                    // 剩下的最前面所有欄位，全部合併當作「題目」
+                    let o4 = cols[len - 2]; let o3 = cols[len - 3]; let o2 = cols[len - 4]; let o1 = cols[len - 5];
                     let q = cols.slice(0, len - 5).join(' '); 
 
                     addQuestionBox(q, o1, o2, o3, o4, ans);
                     count++;
                 } else {
-                    failCount++; // 紀錄格式真的太亂，不到 6 格的行數
+                    failCount++; 
                 }
             });
             
@@ -501,16 +489,19 @@
 
         function createGame() {
             const pin = document.getElementById('teacher-pin').value.trim();
-            const hp = document.getElementById('teacher-hp').value;
+            const expectedPlayers = document.getElementById('teacher-expected-players').value || 24;
             const timeLimit = document.getElementById('teacher-time-limit').value;
             const parsedQuiz = getParsedQuizFromUI(); 
             
-            if(!pin || !hp) { alert("請設定 PIN 碼與魔王血量！"); return; }
+            if(!pin) { alert("請設定 PIN 碼！"); return; }
             if(parsedQuiz.length === 0) { alert("請至少新增一道完整的題目！"); return; }
+
+            // 🌟 核心：自動計算魔王血量 (人數 * 題數 * 40預期傷害)
+            const autoBossHP = Math.max(1000, parseInt(expectedPlayers) * parsedQuiz.length * 40);
 
             gameRef.set({ 
                 pinCode: pin, gameType: 'boss_battle', timeLimit: parseInt(timeLimit), 
-                bossTotalHP: parseInt(hp), currentBossHP: parseInt(hp), bossEnraged: false,
+                bossTotalHP: autoBossHP, currentBossHP: autoBossHP, bossEnraged: false,
                 questions: parsedQuiz, status: 'waiting', players: {}, questionStats: {} 
             }).then(() => {
                 currentRole = "projector";
@@ -553,8 +544,12 @@
                     bossTotalHP = data.bossTotalHP;
                     bossHP = data.currentBossHP;
                     timeLimitSetting = data.timeLimit || 50;
-                    myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
                     
+                    // 🌟 核心：自動計算學生血量 (題數 * 50，保證不會提早死掉)
+                    playerMaxHP = quizData.length * 50;
+                    playerHP = playerMaxHP;
+
+                    myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
                     gameRef.child('players').child(myPlayerId).set({ name: playerName, correct: 0, wrong: 0 });
                     
                     document.getElementById('student-lobby-name').innerText = `嗨，${playerName}！`;
@@ -569,7 +564,7 @@
             gameRef.child('status').on('value', snap => { 
                 let status = snap.val();
                 if (status === 'playing' && currentRole === 'student') { 
-                    currentQuestionIndex = 0; playerHP = playerMaxHP; 
+                    currentQuestionIndex = 0; 
                     switchScreen('screen-game'); updateRPGUI(); startGameListener(); loadQuestion(); 
                 }
                 if (status === 'finished' && currentRole === 'student') {
@@ -581,7 +576,7 @@
 
         function updateRPGUI() {
             let bossPercent = Math.max(0, (bossHP / bossTotalHP) * 100);
-            if (bossPercent <= 50 && !isBossEnraged) {
+            if (bossPercent <= 50 && !isBossEnraged && bossHP > 0) {
                 isBossEnraged = true;
                 if(currentRole === "projector") {
                     document.getElementById('proj-rage-warning').classList.remove('hidden');
@@ -641,9 +636,12 @@
             gameRef.child('currentBossHP').on('value', snap => {
                 let newHP = snap.val();
                 if (newHP !== null && newHP < bossHP) triggerUltimateHitEffect();
-                if (newHP !== null) bossHP = newHP;
+                if (newHP !== null) {
+                    bossHP = newHP;
+                    if (bossHP < 0) bossHP = 0; // 防止負數血量
+                }
                 updateRPGUI();
-                if (bossHP <= 0 && currentRole === "projector") { triggerGameEnd(); }
+                // 🌟 修改：不再因為魔王血量歸零而強制結束遊戲，讓學生繼續作答打怪！
             });
         }
 
@@ -661,7 +659,8 @@
         }
 
         function loadQuestion() {
-            if (bossHP <= 0 || playerHP <= 0 || currentQuestionIndex >= quizData.length) { 
+            // 🌟 修改：即使玩家血量歸零或魔王血量歸零，只要題目還沒完就繼續出題
+            if (currentQuestionIndex >= quizData.length) { 
                 clearInterval(timerInterval); 
                 document.getElementById('question-text').innerText = "作答完畢！請看大螢幕等待結算...";
                 document.getElementById('options-box').classList.add('hidden');
@@ -681,6 +680,7 @@
             
             let dmgTaken = isBossEnraged ? 50 : 25;
             playerHP -= dmgTaken; 
+            if (playerHP < 0) playerHP = 0; // 🌟 確保血量不為負數
             updateRPGUI();
 
             document.body.classList.add('flash-red'); setTimeout(() => document.body.classList.remove('flash-red'), 300);
@@ -689,11 +689,7 @@
             gameRef.child('players').child(myPlayerId).update({ wrong: myWrongCount });
             gameRef.child('questionStats').child(currentQuestionIndex).child('wrong').transaction(curr => (curr || 0) + 1);
 
-            if (playerHP <= 0) { 
-                document.getElementById('question-text').innerText = "💀 你倒下了，請等待結算..."; 
-                document.getElementById('options-box').classList.add('hidden');
-                return; 
-            }
+            // 🌟 修改：移除死亡判定，讓學生可以繼續作答到最後一題
             currentQuestionIndex++; setTimeout(loadQuestion, 500);
         }
 
