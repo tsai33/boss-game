@@ -2,14 +2,19 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>勇者學園對戰平台 7.0 (全班大絕招版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>勇者學園對戰平台 7.1 (平板優化版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
+        /* 🌟 平板防誤觸核心設定 */
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        input, textarea, select { user-select: auto; -webkit-user-select: auto; }
+        button { touch-action: manipulation; } /* 防止雙擊放大 */
+
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; margin: 0; padding: 20px; 
@@ -20,41 +25,41 @@
             overflow-x: hidden;
         }
         
-        .card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%; max-width: 600px; margin: 20px auto; border: 2px solid rgba(255,255,255,0.8);}
+        .card { background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 95%; max-width: 600px; margin: 10px auto; border: 2px solid rgba(255,255,255,0.8);}
         .hidden { display: none !important; }
         .flash-red { background-color: rgba(255, 0, 0, 0.6) !important; }
         .flash-green { background-color: rgba(0, 255, 0, 0.4) !important; } 
         .flash-gold { background-color: rgba(255, 215, 0, 0.5) !important; } 
         
         h1 { color: #333; text-shadow: 1px 1px 2px white; }
-        input, select, textarea { width: 90%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 18px; box-sizing: border-box;}
-        button { padding: 15px 30px; font-size: 20px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; margin: 10px; transition: 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2);}
+        input, select, textarea { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 18px; }
+        button { padding: 15px 20px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; margin: 5px; transition: 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2);}
         button:active { transform: translateY(4px); box-shadow: none;}
         .btn-primary { background-color: #4CAF50; }
         .btn-teacher { background-color: #607D8B; }
         .btn-student { background-color: #FF9800; }
         .btn-danger { background-color: #e21b3c; }
         .btn-warning { background-color: #FF9800; } 
-        .btn-item { background-color: #9C27B0; font-size: 16px; padding: 10px 20px; margin-top: 10px; width: 100%;}
+        .btn-item { background-color: #9C27B0; font-size: 16px; width: 100%;}
         
         .player-list-box { background: #f9f9f9; border: 2px dashed #ccc; padding: 15px; border-radius: 10px; min-height: 100px; max-height: 200px; overflow-y: auto; text-align: left;}
         .player-tag { display: inline-block; background: #2196f3; color: white; padding: 5px 10px; border-radius: 20px; margin: 5px; font-size: 14px;}
 
         .lvl-badge { background: #FFD700; color: #b8860b; padding: 3px 10px; border-radius: 15px; font-size: 16px; font-weight: bold; border: 2px solid #b8860b; vertical-align: middle;}
-        .exp-text { font-size: 16px; color: #555; font-weight: bold; margin-bottom: 10px;}
+        .exp-text { font-size: 16px; color: #555; font-weight: bold; margin-bottom: 5px;}
 
         .boss-image { 
-            width: 200px; height: 200px; object-fit: contain; 
+            width: 150px; height: 150px; object-fit: contain; 
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); 
             transition: all 0.2s ease; margin-bottom: 10px;
             animation: boss-idle 3s ease-in-out infinite; 
         }
-        .projector-boss { width: 350px; height: 350px; } 
+        .projector-boss { width: 300px; height: 300px; } 
 
         @keyframes boss-idle {
-            0% { transform: translateX(-20px) translateY(0px); }
-            50% { transform: translateX(20px) translateY(-10px); }
-            100% { transform: translateX(-20px) translateY(0px); }
+            0% { transform: translateX(-15px) translateY(0px); }
+            50% { transform: translateX(15px) translateY(-10px); }
+            100% { transform: translateX(-15px) translateY(0px); }
         }
 
         .ultimate-hit {
@@ -79,24 +84,24 @@
             100% { transform: scale(1) rotate(0deg); }
         }
         
-        .hp-text { font-size: 22px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 0px white;}
-        .hp-bar-bg { width: 100%; height: 30px; background-color: #333; border-radius: 15px; border: 3px solid #fff; overflow: hidden; box-shadow: inset 0 0 10px black; margin: 0 auto;}
+        .hp-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 0px white;}
+        .hp-bar-bg { width: 100%; height: 25px; background-color: #333; border-radius: 15px; border: 3px solid #fff; overflow: hidden; box-shadow: inset 0 0 10px black; margin: 0 auto;}
         .hp-bar-fill { height: 100%; transition: width 0.3s ease-out; }
         .boss-fill { background: linear-gradient(90deg, #ff0000, #ff4d4d); width: 100%; }
         .player-fill { background: linear-gradient(90deg, #00b300, #33ff33); width: 100%; }
         .exp-fill { background: linear-gradient(90deg, #FFD700, #FFA500); width: 0%; height: 100%; transition: width 0.3s;}
 
-        #timer-display { font-size: 28px; font-weight: bold; color: #e21b3c; margin: 10px 0; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #e21b3c; display: inline-block;}
+        #timer-display { font-size: 24px; font-weight: bold; color: #e21b3c; margin: 10px 0; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #e21b3c; display: inline-block;}
 
-        .options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 20px; }
-        .option-btn { padding: 20px; font-size: 22px; font-weight: bold; color: white; border-radius: 10px; border: none; cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);}
+        .options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 15px; }
+        .option-btn { padding: 15px; font-size: 18px; font-weight: bold; color: white; border-radius: 10px; border: none; cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); min-height: 80px; display: flex; align-items: center; justify-content: center;}
         #btn-0 { background-color: #e21b3c; border-bottom: 5px solid #a3112a;} 
         #btn-1 { background-color: #1368ce; border-bottom: 5px solid #0d4a96;} 
         #btn-2 { background-color: #d89e00; border-bottom: 5px solid #9e7400;} 
         #btn-3 { background-color: #26890c; border-bottom: 5px solid #1a5e08;} 
         #qrcode { margin: 10px auto; display: flex; justify-content: center; }
 
-        .summary-container { display: flex; justify-content: space-between; gap: 20px; text-align: left;}
+        .summary-container { display: flex; flex-direction: column; gap: 20px; text-align: left;}
         .summary-box { flex: 1; background: #fff; padding: 20px; border-radius: 10px; border: 2px solid #ddd;}
         .summary-list { list-style: none; padding: 0; font-size: 18px; margin: 0;}
         .summary-list li { padding: 8px 0; border-bottom: 1px dashed #ccc; display: flex; justify-content: space-between;}
@@ -110,36 +115,57 @@
         .q-correct { font-weight: bold; color: #2e7d32; font-size: 18px;}
 
         .save-load-box { background: #e3f2fd; padding: 15px; border-radius: 10px; border: 2px dashed #1565C0; margin: 15px 0; text-align: left;}
-        .save-load-box input, .save-load-box select { width: 60%; display: inline-block; padding: 10px; margin: 5px 0;}
         .q-edit-box { background: #f1f8e9; padding: 15px; border-radius: 8px; border: 2px solid #c5e1a5; margin-bottom: 15px; text-align: left;}
-        .q-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
-        .q-input { flex: 1; padding: 10px; border: 2px solid #ccc; border-radius: 5px; font-size: 16px; }
-        .opt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .opt-input { padding: 10px; border: 2px solid #ccc; border-radius: 5px; font-size: 16px; }
-        .del-btn { background: #e21b3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+        .q-row { display: flex; gap: 5px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;}
+        .opt-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
         .import-box { background: #fff3e0; padding: 15px; border-radius: 8px; border: 2px dashed #FF9800; margin-bottom: 15px; text-align: left; }
 
-        .gold-text { color: #f57f17; font-weight: bold; font-size: 20px; }
-        .combo-text { color: #e64a19; font-weight: bold; font-size: 18px; margin-left: 15px; animation: pulse 1s infinite; }
-        .shop-container { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; padding-bottom: 5px;}
-        .shop-item { flex: 1; background: #fffde7; border: 2px solid #ffb300; border-radius: 8px; padding: 10px; font-size: 16px; font-weight: bold; color: #333; cursor: pointer; transition: 0.2s;}
+        .gold-text { color: #f57f17; font-weight: bold; font-size: 18px; }
+        .combo-text { color: #e64a19; font-weight: bold; font-size: 16px; margin-left: 10px; animation: pulse 1s infinite; }
+        .shop-container { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding-bottom: 5px;}
+        .shop-item { flex: 1; background: #fffde7; border: 2px solid #ffb300; border-radius: 8px; padding: 8px; font-size: 14px; font-weight: bold; color: #333; cursor: pointer; transition: 0.2s;}
         .shop-item:hover:not(:disabled) { transform: scale(1.05); background: #ffecb3;}
         .shop-item:disabled { opacity: 0.5; cursor: not-allowed; border-color: #ccc; filter: grayscale(100%);}
-        .buff-container { display: flex; gap: 10px; justify-content: center; margin-top: 10px; min-height: 35px;}
-        .buff-badge { background: #e3f2fd; color: #1565C0; padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; border: 2px solid #2196f3; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 5px;}
+        .buff-container { display: flex; gap: 5px; justify-content: center; margin-top: 10px; min-height: 35px; flex-wrap: wrap;}
+        .buff-badge { background: #e3f2fd; color: #1565C0; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 2px solid #2196f3; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 5px;}
         
-        .log-toast { background: rgba(0, 0, 0, 0.85); border-left: 8px solid; color: white; padding: 12px 20px; margin-bottom: 10px; border-radius: 5px; font-size: 20px; font-weight: bold; text-shadow: 1px 1px 2px black; box-shadow: 0 4px 10px rgba(0,0,0,0.5); animation: slide-in 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), fade-out 0.5s ease-in 3.5s forwards;}
+        .log-toast { background: rgba(0, 0, 0, 0.85); border-left: 8px solid; color: white; padding: 12px 20px; margin-bottom: 10px; border-radius: 5px; font-size: 16px; font-weight: bold; text-shadow: 1px 1px 2px black; box-shadow: 0 4px 10px rgba(0,0,0,0.5); animation: slide-in 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), fade-out 0.5s ease-in 3.5s forwards;}
         
-        .leaderboard-box { position: absolute; left: 20px; top: 20px; background: rgba(0, 0, 0, 0.75); color: white; padding: 15px; border-radius: 12px; border: 2px solid #FFD700; text-align: left; width: 220px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); z-index: 100; backdrop-filter: blur(5px);}
-        .lb-title { color: #FFD700; margin-top: 0; font-size: 18px; border-bottom: 1px dashed #FFD700; padding-bottom: 8px; text-align: center;}
-        .lb-item { margin: 8px 0; font-size: 16px; display: flex; justify-content: space-between; font-weight: bold;}
-        .lb-item:first-child { color: #FFD700; font-size: 18px; text-shadow: 0 0 5px #FFD700;} 
+        .leaderboard-box { position: absolute; left: 10px; top: 10px; background: rgba(0, 0, 0, 0.75); color: white; padding: 10px; border-radius: 12px; border: 2px solid #FFD700; text-align: left; width: 180px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); z-index: 100; backdrop-filter: blur(5px);}
+        .lb-title { color: #FFD700; margin-top: 0; font-size: 16px; border-bottom: 1px dashed #FFD700; padding-bottom: 5px; text-align: center;}
+        .lb-item { margin: 5px 0; font-size: 14px; display: flex; justify-content: space-between; font-weight: bold;}
+        .lb-item:first-child { color: #FFD700; font-size: 16px; text-shadow: 0 0 5px #FFD700;} 
         .lb-item:nth-child(2) { color: #E0E0E0; } 
         .lb-item:nth-child(3) { color: #CD7F32; } 
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fade-out { to { opacity: 0; transform: translateY(-20px); } }
+
+        /* 🌟 平板專屬放大優化 (螢幕寬度 >= 768px 時觸發) */
+        @media (min-width: 768px) {
+            .card { max-width: 800px; padding: 40px; margin: 20px auto;}
+            h1 { font-size: 32px; }
+            #question-text { font-size: 36px; margin: 15px 0; line-height: 1.4; color: #1565C0;}
+            .option-btn { font-size: 26px; padding: 25px; min-height: 100px;}
+            .boss-image { width: 250px; height: 250px; }
+            .projector-boss { width: 400px; height: 400px; }
+            .hp-text { font-size: 24px; }
+            .hp-bar-bg { height: 35px; }
+            #timer-display { font-size: 36px; padding: 15px 30px; }
+            .shop-item { font-size: 18px; padding: 15px; }
+            .btn-item { font-size: 20px; padding: 15px; }
+            .gold-text { font-size: 26px; }
+            .combo-text { font-size: 24px; }
+            .buff-badge { font-size: 18px; padding: 8px 15px; }
+            .summary-container { flex-direction: row; }
+            .opt-row { grid-template-columns: 1fr 1fr; } /* 編輯區選項並排 */
+            .leaderboard-box { width: 250px; left: 20px; top: 20px; padding: 15px;}
+            .lb-title { font-size: 20px; }
+            .lb-item { font-size: 18px; margin: 10px 0;}
+            .lb-item:first-child { font-size: 20px; }
+            .log-toast { font-size: 24px; padding: 15px 25px; }
+        }
     </style>
 </head>
 <body>
@@ -170,37 +196,37 @@
         <h1>👨‍🏫 老師發布後台</h1>
         
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0;">
-            <input type="text" id="teacher-pin" placeholder="遊戲 PIN 碼" style="width: 70%; margin: 0; font-weight: bold; color: #e21b3c;">
-            <button onclick="generateRandomPin()" style="width: 25%; margin: 0; padding: 15px 0; font-size: 16px; background: #607D8B;">🎲 換一組</button>
+            <input type="text" id="teacher-pin" placeholder="遊戲 PIN 碼" style="width: 65%; margin: 0; font-weight: bold; color: #e21b3c;">
+            <button onclick="generateRandomPin()" style="width: 30%; margin: 0; padding: 15px 0; font-size: 16px; background: #607D8B;">🎲 換一組</button>
         </div>
 
         <div style="display: flex; gap: 10px; width: 100%;">
-            <input type="number" id="teacher-expected-players" placeholder="預計全班人數 (自動計算難度)" value="24" style="flex: 1; border: 2px solid #2196F3; background: #e3f2fd;">
+            <input type="number" id="teacher-expected-players" placeholder="全班人數 (算血量)" value="24" style="flex: 1; border: 2px solid #2196F3; background: #e3f2fd;">
             <input type="number" id="teacher-time-limit" placeholder="每題秒數" value="60" style="flex: 1;">
         </div>
         <p style="text-align: left; margin: 0 0 10px 5px; font-size: 14px; color: #1565C0; font-weight: bold;">💡 系統會根據「全班人數」與「總題數」自動為您計算最完美的魔王血量！</p>
         
         <div class="save-load-box">
             <h3 style="margin-top: 0; color: #1565C0;">☁️ 雲端題庫中心</h3>
-            <div>
-                <input type="text" id="quiz-save-name" placeholder="題庫名稱 (例：第三課)">
-                <button class="btn-primary" style="padding: 10px; font-size: 16px;" onclick="saveQuizBank()">☁️ 儲存至雲端</button>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="quiz-save-name" placeholder="題庫名稱" style="flex: 1; margin: 0;">
+                <button class="btn-primary" style="padding: 10px; font-size: 16px; margin: 0;" onclick="saveQuizBank()">☁️ 儲存</button>
             </div>
-            <div style="margin-top: 10px;">
-                <select id="quiz-load-select"><option value="">-- 載入雲端題庫中... --</option></select>
-                <button class="btn-teacher" style="padding: 10px; font-size: 16px;" onclick="loadQuizBank()">⬇️ 讀取選取題庫</button>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <select id="quiz-load-select" style="flex: 1; margin: 0;"><option value="">-- 載入雲端題庫中... --</option></select>
+                <button class="btn-teacher" style="padding: 10px; font-size: 16px; margin: 0;" onclick="loadQuizBank()">⬇️ 讀取</button>
             </div>
         </div>
 
         <div style="background: #fff; padding: 15px; border-radius: 10px; border: 2px solid #ddd; margin: 15px 0;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin:0; color:#333;">📝 編輯題目 (視覺化模式)</h3>
-                <button class="btn-warning" onclick="toggleImportBox()" style="margin: 0; padding: 10px 15px; font-size: 16px;">📥 批次匯入 (Excel)</button>
+                <button class="btn-warning" onclick="toggleImportBox()" style="margin: 0; padding: 10px; font-size: 16px;">📥 批次匯入</button>
             </div>
 
             <div id="import-section" class="import-box hidden">
                 <p style="margin-top: 0; font-weight: bold; color: #E65100;">💡 智慧防呆匯入：請直接從 Excel 複製貼上！</p>
-                <p style="margin: 5px 0; font-size: 14px; color: #555;">就算不小心複製到最前面的題號也沒關係，系統會自動辨識！確保最右邊 5 格是「四個選項 + 1個正確答案數字(1~4)」即可。</p>
+                <p style="margin: 5px 0; font-size: 14px; color: #555;">就算複製到最前面的題號也沒關係，確保最右邊 5 格是「四個選項 + 1個正確答案數字(1~4)」即可。</p>
                 <textarea id="import-textarea" rows="6" placeholder="請將 Excel 內容貼在這裡..." style="width: 100%; border-color: #FFB74D; background: #FFF9C4; padding: 10px; box-sizing: border-box;"></textarea>
                 <button class="btn-warning" onclick="processBatchImport()" style="width: 100%; margin: 10px 0;">✅ 智慧解析並轉換</button>
             </div>
@@ -237,7 +263,7 @@
         <p style="color: #666; font-weight: bold;">請抬頭看黑板大螢幕確認名字！</p>
     </div>
 
-    <div id="screen-projector" class="screen-page card hidden" style="max-width: 800px; background: rgba(0,0,0,0.8); color: white; border: none; position: relative;">
+    <div id="screen-projector" class="screen-page card hidden" style="max-width: 900px; background: rgba(0,0,0,0.8); color: white; border: none; position: relative;">
         
         <div id="projector-leaderboard" class="leaderboard-box hidden">
             <h3 class="lb-title">🏆 累積傷害排行</h3>
@@ -246,7 +272,7 @@
 
         <div id="projector-log-container" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
 
-        <div style="width: 90%; margin: 0 auto 20px auto;">
+        <div style="width: 90%; margin: 0 auto 20px auto; z-index: 10; position: relative;">
             <div style="color: #00E676; font-size: 22px; font-weight: bold; text-shadow: 1px 1px 2px black; text-align: left; margin-bottom: 5px;">✨ 全班集氣條 <span id="proj-energy-text">0%</span></div>
             <div class="hp-bar-bg" style="height: 25px; border-color: #00E676;">
                 <div id="proj-energy-fill" class="hp-bar-fill" style="background: linear-gradient(90deg, #00C853, #B2FF59); width: 0%;"></div>
@@ -263,13 +289,13 @@
         <div class="hp-bar-bg" style="width: 80%; height: 40px;">
             <div id="projector-boss-hp-fill" class="hp-bar-fill boss-fill"></div>
         </div>
-        <button style="margin-top: 30px; background: #607D8B;" onclick="triggerGameEnd()">🛑 結束戰鬥並觀看戰報</button>
+        <button style="margin-top: 30px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 結束戰鬥並觀看戰報</button>
     </div>
 
-    <div id="screen-game" class="screen-page hidden" style="max-width: 800px; width: 90%; padding: 0;">
-        <div class="card" style="margin-top: 0; padding: 20px;">
+    <div id="screen-game" class="screen-page hidden" style="width: 100%; padding: 0;">
+        <div class="card" style="margin-top: 0;">
             <h2 id="display-player-name" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
-            <div id="student-hit-container" style="display:inline-block; padding:10px;">
+            <div id="student-hit-container" style="display:inline-block; padding:5px;">
                 <img id="student-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image">
             </div>
             <h3 id="student-rage-warning" class="hidden" style="color: #ff00ff; margin: 0;">⚠️ 狂暴狀態：答錯扣血加倍！</h3>
@@ -277,40 +303,39 @@
             <div class="hp-bar-bg"><div id="student-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
         </div>
         
-        <div class="card" style="padding: 15px; margin-top: 15px;">
+        <div class="card" style="margin-top: 10px;">
             <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
             <div class="hp-bar-bg" style="margin-bottom: 10px;"><div id="player-hp-fill" class="hp-bar-fill player-fill"></div></div>
             <div class="exp-text" id="ui-exp-text">🌟 EXP: 0 / 30</div>
             <div class="hp-bar-bg" style="height: 10px; border: 1px solid #ccc; margin-bottom: 10px;"><div id="ui-exp-fill" class="exp-fill"></div></div>
             
-            <div>
+            <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
                 <span class="gold-text" id="ui-gold-text">💰 金幣: 0 G</span>
                 <span class="combo-text hidden" id="ui-combo-text">🔥 3 連擊!</span>
             </div>
-            
             <div class="buff-container" id="ui-buff-container"></div>
         </div>
         
-        <div class="card" style="padding: 15px; margin-top: 15px;">
+        <div class="card" style="margin-top: 10px; padding-bottom: 10px;">
             <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
             <h2 id="question-text" style="margin: 0;">載入中...</h2>
         </div>
         
-        <div class="options-container" id="options-box">
+        <div class="options-container" id="options-box" style="width: 95%; max-width: 800px; margin: 10px auto;">
             <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
             <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
             <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
             <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
         </div>
 
-        <div class="card" style="padding: 15px; margin-top: 15px; background: #fff8e1; border-color: #ffc107;">
+        <div class="card" style="margin-top: 10px; background: #fff8e1; border-color: #ffc107;">
             <h3 style="margin: 0 0 5px 0; color: #f57f17; display: flex; align-items: center; justify-content: center; gap: 5px;">
                 🏪 魔法道具商城
             </h3>
             <div class="shop-container">
-                <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 30)">⚔️ 會心一擊<br><span style="font-size:14px; color:#f57f17;">(30G)</span></button>
-                <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 40)">🛡️ 絕對防禦<br><span style="font-size:14px; color:#f57f17;">(40G)</span></button>
-                <button class="shop-item" id="btn-shop-time" onclick="buyItem('time', 50)">⏱️ 時間暫停<br><span style="font-size:14px; color:#f57f17;">(50G)</span></button>
+                <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 30)">⚔️ 會心一擊<br><span style="font-size:12px; color:#f57f17;">(30G)</span></button>
+                <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 40)">🛡️ 絕對防禦<br><span style="font-size:12px; color:#f57f17;">(40G)</span></button>
+                <button class="shop-item" id="btn-shop-time" onclick="buyItem('time', 50)">⏱️ 時間暫停<br><span style="font-size:12px; color:#f57f17;">(50G)</span></button>
             </div>
             <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5;">🎒 喝生命藥水 (擁有: 0瓶)</button>
         </div>
@@ -377,7 +402,7 @@
         let isBossEnraged = false; 
 
         let currentRole = ""; 
-        let timeLeft = 60; // 預設變數對應
+        let timeLeft = 60; 
         let timeLimitSetting = 60;
         let timerInterval;
 
@@ -417,12 +442,12 @@
                     <span style="font-weight:bold; font-size:18px; color:#2e7d32;">Q:</span>
                     <input type="text" class="q-val q-input" value="${q}" placeholder="請輸入題目...">
                     <select class="ans-val q-input" style="flex: 0.5;">
-                        <option value="1" ${ans==1?'selected':''}>正確答案: 選項A</option>
-                        <option value="2" ${ans==2?'selected':''}>正確答案: 選項B</option>
-                        <option value="3" ${ans==3?'selected':''}>正確答案: 選項C</option>
-                        <option value="4" ${ans==4?'selected':''}>正確答案: 選項D</option>
+                        <option value="1" ${ans==1?'selected':''}>答案: A</option>
+                        <option value="2" ${ans==2?'selected':''}>答案: B</option>
+                        <option value="3" ${ans==3?'selected':''}>答案: C</option>
+                        <option value="4" ${ans==4?'selected':''}>答案: D</option>
                     </select>
-                    <button class="del-btn" onclick="this.parentElement.parentElement.remove()">❌ 刪除</button>
+                    <button class="del-btn" onclick="this.parentElement.parentElement.remove()">❌</button>
                 </div>
                 <div class="opt-row">
                     <input type="text" class="o1-val opt-input" value="${o1}" placeholder="A 選項">
@@ -517,7 +542,7 @@
             gameRef.set({ 
                 pinCode: pin, gameType: 'boss_battle', timeLimit: parseInt(timeLimit), 
                 bossTotalHP: autoBossHP, currentBossHP: autoBossHP, bossEnraged: false,
-                classEnergy: 0, ultimateFired: false, // 🌟 新增：全班集氣變數
+                classEnergy: 0, ultimateFired: false,
                 questions: parsedQuiz, status: 'waiting', players: {}, questionStats: {} 
             }).then(() => {
                 currentRole = "projector"; document.getElementById('lobby-pin-display').innerText = `👉 PIN：${pin}`;
@@ -557,7 +582,7 @@
             gameRef.once('value', snap => {
                 const data = snap.val();
                 if (data && data.pinCode === inputPin) {
-                    currentRole = "student"; quizData = data.questions; bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; timeLimitSetting = data.timeLimit || 50;
+                    currentRole = "student"; quizData = data.questions; bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; timeLimitSetting = data.timeLimit || 60;
                     
                     playerMaxHP = quizData.length * 50; playerHP = playerMaxHP;
                     playerGold = 0; playerCombo = 0; hasBuffDmg = false; hasBuffShield = false; isTimeFrozen = false;
@@ -620,9 +645,8 @@
             setTimeout(() => { if(toast.parentElement) toast.parentElement.removeChild(toast); }, 4000);
         }
 
-        // 🌟 新增：發動全班大絕招
         function fireUltimate() {
-            document.getElementById('btn-ultimate').classList.add('hidden'); // 點擊後立刻隱藏
+            document.getElementById('btn-ultimate').classList.add('hidden'); 
             gameRef.child('ultimateFired').set(true);
         }
 
@@ -694,38 +718,25 @@
             });
 
             if (currentRole === 'projector') {
-                // 🌟 大螢幕：監聽全班集氣條
                 gameRef.child('classEnergy').on('value', snap => {
                     let energy = snap.val() || 0;
                     document.getElementById('proj-energy-fill').style.width = energy + '%';
                     document.getElementById('proj-energy-text').innerText = energy + '%';
-                    
-                    if(energy >= 100 && bossHP > 0) {
-                        document.getElementById('btn-ultimate').classList.remove('hidden');
-                    } else {
-                        document.getElementById('btn-ultimate').classList.add('hidden');
-                    }
+                    if(energy >= 100 && bossHP > 0) { document.getElementById('btn-ultimate').classList.remove('hidden'); } 
+                    else { document.getElementById('btn-ultimate').classList.add('hidden'); }
                 });
 
-                // 🌟 大螢幕：監聽大絕招是否被觸發
                 gameRef.child('ultimateFired').on('value', snap => {
                     if(snap.val() === true) {
                         document.body.classList.add('flash-gold');
                         setTimeout(() => document.body.classList.remove('flash-gold'), 1000);
-                        
-                        const sfxUlt = document.getElementById('sfx-ultimate');
-                        if(sfxUlt) { sfxUlt.currentTime = 0; sfxUlt.play().catch(()=>{}); }
-                        
+                        const sfxUlt = document.getElementById('sfx-ultimate'); if(sfxUlt) { sfxUlt.currentTime = 0; sfxUlt.play().catch(()=>{}); }
                         showProjectorLog("☄️ 全班集氣大絕招發動！造成毀滅性傷害！", "#FFD700");
                         
-                        // 由大螢幕端統一扣血 (15%最大生命)，避免學生端重複扣
                         let dmg = Math.floor(bossTotalHP * 0.15); 
                         let newHP = Math.max(0, bossHP - dmg);
                         gameRef.child('currentBossHP').set(newHP);
-                        
-                        // 重置集氣與狀態
-                        gameRef.child('classEnergy').set(0);
-                        gameRef.child('ultimateFired').set(false); 
+                        gameRef.child('classEnergy').set(0); gameRef.child('ultimateFired').set(false); 
                     }
                 });
 
@@ -742,7 +753,6 @@
                 gameRef.child('players').on('value', snap => {
                     let players = snap.val() || {};
                     let sortedPlayers = Object.values(players).sort((a, b) => (b.damage || 0) - (a.damage || 0));
-                    
                     let lbHtml = "";
                     sortedPlayers.slice(0, 5).forEach((p, i) => {
                         if((p.damage || 0) > 0) {
@@ -750,7 +760,6 @@
                             lbHtml += `<div class="lb-item"><span>${rankIcon} ${p.name}</span> <span>${p.damage}</span></div>`;
                         }
                     });
-                    
                     document.getElementById('lb-list').innerHTML = lbHtml || '等待勇者攻擊...';
                 });
             }
@@ -816,7 +825,6 @@
                 if (playerCombo >= 3) { earnedGold += 5; } 
                 playerGold += earnedGold;
 
-                // 🌟 答對一題，為全班集氣條增加 2%
                 gameRef.child('classEnergy').transaction(curr => Math.min(100, (curr || 0) + 2));
 
                 let baseDmg = 40;
