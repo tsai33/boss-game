@@ -154,7 +154,7 @@
     <div id="screen-student-lobby" class="screen-page card hidden">
         <h1 id="student-lobby-name"></h1>
         <h2>⏳ 正在等待老師開始遊戲...</h2>
-        <img id="projector-boss-img" src="boss.png" class="boss-image projector-boss">
+        <img src="https://cdn-icons-png.flaticon.com/512/1055/1055673.png" style="width: 100px; filter: grayscale(100%); margin: 20px 0;">
         <p style="color: #666; font-weight: bold;">請抬頭看黑板大螢幕確認名字！</p>
     </div>
 
@@ -164,7 +164,7 @@
         <h2 id="proj-rage-warning" class="hidden" style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff; animation: pulse 1s infinite;">⚠️ 魔王進入狂暴狀態！傷害加倍！⚠️</h2>
 
         <div id="projector-hit-container" style="display:inline-block; padding:10px;">
-            <img id="projector-boss-img" src="boss.png" class="boss-image projector-boss">
+            <img id="projector-boss-img" src="https://cdn-icons-png.flaticon.com/512/1055/1055673.png" class="boss-image projector-boss">
         </div>
         <div class="hp-text" id="projector-boss-hp-text" style="color: #ff4d4d;">👿 魔王血量</div>
         <div class="hp-bar-bg" style="width: 80%; height: 40px;">
@@ -178,7 +178,7 @@
             <h2 id="display-player-name" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
             
             <div id="student-hit-container" style="display:inline-block; padding:10px;">
-                <img id="projector-boss-img" src="boss.png" class="boss-image projector-boss">
+                <img id="student-boss-img" src="https://cdn-icons-png.flaticon.com/512/1055/1055673.png" class="boss-image">
             </div>
             
             <h3 id="student-rage-warning" class="hidden" style="color: #ff00ff; margin: 0;">⚠️ 狂暴狀態：答錯扣血加倍！</h3>
@@ -252,7 +252,6 @@
         let quizData = [];
         let currentQuestionIndex = 0;
         
-        // 🌟 RPG 核心變數
         const playerMaxHP = 100;
         let playerHP = playerMaxHP;
         let playerLevel = 1;
@@ -261,7 +260,7 @@
         
         let bossTotalHP = 1000; 
         let bossHP = bossTotalHP;
-        let isBossEnraged = false; // 狂暴狀態標記
+        let isBossEnraged = false; 
 
         let currentRole = ""; 
         let timeLeft = 50;
@@ -377,11 +376,9 @@
             });
         }
 
-        // 🌟 更新所有 RPG UI (血條、經驗值、背包、狂暴狀態)
         function updateRPGUI() {
             let bossPercent = Math.max(0, (bossHP / bossTotalHP) * 100);
             
-            // 檢查是否進入狂暴模式 (血量 <= 50%)
             if (bossPercent <= 50 && !isBossEnraged) {
                 isBossEnraged = true;
                 if(currentRole === "projector") {
@@ -405,14 +402,12 @@
                 document.getElementById('player-hp-fill').style.width = pPercent + '%';
                 document.getElementById('player-hp-text').innerText = `🛡️ 你的血量：${playerHP}`;
 
-                // 🌟 更新經驗值與等級
-                let expNeeded = playerLevel * 30; // 升級所需經驗：30, 60, 90...
+                let expNeeded = playerLevel * 30; 
                 let expPercent = (playerExp / expNeeded) * 100;
                 document.getElementById('ui-level').innerText = `Lv.${playerLevel}`;
                 document.getElementById('ui-exp-text').innerText = `🌟 EXP: ${playerExp} / ${expNeeded}`;
                 document.getElementById('ui-exp-fill').style.width = expPercent + '%';
 
-                // 🌟 更新藥水按鈕狀態
                 let btnPotion = document.getElementById('btn-potion');
                 btnPotion.innerText = `🎒 喝生命藥水 (擁有: ${playerPotions}瓶)`;
                 if(playerPotions > 0 && playerHP < playerMaxHP) {
@@ -425,14 +420,12 @@
             }
         }
 
-        // 🌟 喝藥水功能
         function usePotion() {
             if (playerPotions > 0 && playerHP < playerMaxHP) {
                 playerPotions--;
-                playerHP = Math.min(playerMaxHP, playerHP + 30); // 回復 30 血，不超過滿血
+                playerHP = Math.min(playerMaxHP, playerHP + 30); 
                 updateRPGUI();
                 
-                // 播放補血音效與特效
                 let sfx = document.getElementById('sfx-heal');
                 if(sfx) { sfx.currentTime = 0; sfx.play().catch(()=>{}); }
                 document.body.classList.add('flash-green');
@@ -486,12 +479,10 @@
             startTimer();
         }
 
-        // 🌟 答錯：計算狂暴傷害
         function handleWrongAnswer() {
             const sfx = document.getElementById('sfx-hurt');
             if(sfx) { sfx.currentTime = 0; sfx.play().catch(() => {}); }
             
-            // 狂暴模式傷害加倍！
             let dmgTaken = isBossEnraged ? 50 : 25;
             playerHP -= dmgTaken; 
             updateRPGUI();
@@ -510,41 +501,34 @@
             currentQuestionIndex++; setTimeout(loadQuestion, 500);
         }
 
-        // 🌟 答對：經驗值、升級、掉寶、傷害計算
         function checkAnswer(idx) {
             clearInterval(timerInterval);
             if (idx === quizData[currentQuestionIndex].correctIndex) {
                 
-                // 1. 計算給魔王的傷害 (等級越高，傷害越大)
                 let baseDmg = 40;
-                let finalDmg = baseDmg + ((playerLevel - 1) * 10); // Lv1=40, Lv2=50, Lv3=60...
+                let finalDmg = baseDmg + ((playerLevel - 1) * 10); 
                 let newHP = Math.max(0, bossHP - finalDmg);
                 gameRef.child('currentBossHP').set(newHP);
                 
-                // 2. 處理經驗值與升級
                 playerExp += 10;
                 let expNeeded = playerLevel * 30;
                 if (playerExp >= expNeeded) {
                     playerLevel++;
-                    playerExp -= expNeeded; // 扣除升級消耗的經驗
+                    playerExp -= expNeeded; 
                     
-                    // 升級音效與特效
                     let sfxLvl = document.getElementById('sfx-levelup');
                     if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); }
                     document.body.classList.add('flash-gold');
                     setTimeout(() => document.body.classList.remove('flash-gold'), 500);
                 }
 
-                // 3. 處理隨機掉寶 (30% 機率掉落生命藥水)
                 if (Math.random() <= 0.3) {
                     playerPotions++;
-                    // 稍微用個 alert 提示學生 (您也可以改成更柔和的 UI 提示)
                     setTimeout(() => alert("🎁 恭喜！魔王掉落了一瓶【生命藥水】！"), 100);
                 }
 
-                updateRPGUI(); // 更新所有 UI 畫面
+                updateRPGUI(); 
 
-                // 記錄戰績
                 myCorrectCount++;
                 gameRef.child('players').child(myPlayerId).update({ correct: myCorrectCount });
                 gameRef.child('questionStats').child(currentQuestionIndex).child('correct').transaction(curr => (curr || 0) + 1);
@@ -553,7 +537,6 @@
             } else { handleWrongAnswer(); }
         }
 
-        // --- 結算報表生成 ---
         function generateTeacherSummary() {
             switchScreen('screen-summary-teacher');
             gameRef.once('value', snap => {
