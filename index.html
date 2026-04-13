@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勇者學園對戰平台 4.0</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; margin: 0; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center;
+            background-image: url('https://img.freepik.com/free-vector/pixel-art-mystical-background_52683-87349.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            transition: background-color 0.3s;
+        }
+        
+        .card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%; max-width: 600px; margin: 20px auto; border: 2px solid rgba(255,255,255,0.8);}
+        .hidden { display: none !important; }
+        .flash-red { background-color: rgba(255, 0, 0, 0.6) !important; }
+        .flash-green { background-color: rgba(0, 255, 0, 0.4) !important; } /* 補血綠光 */
+        .flash-gold { background-color: rgba(255, 215, 0, 0.5) !important; } /* 升級金光 */
+        
+        h1 { color: #333; text-shadow: 1px 1px 2px white; }
+        input, select, textarea { width: 90%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 18px; box-sizing: border-box;}
+        button { padding: 15px 30px; font-size: 20px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; margin: 10px; transition: 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2);}
+        button:active { transform: translateY(4px); box-shadow: none;}
+        .btn-primary { background-color: #4CAF50; }
+        .btn-teacher { background-color: #607D8B; }
+        .btn-student { background-color: #FF9800; }
+        .btn-danger { background-color: #e21b3c; }
+        .btn-item { background-color: #9C27B0; font-size: 16px; padding: 10px 20px; margin-top: 10px; width: 100%;}
+        
+        .player-list-box { background: #f9f9f9; border: 2px dashed #ccc; padding: 15px; border-radius: 10px; min-height: 100px; max-height: 200px; overflow-y: auto; text-align: left;}
+        .player-tag { display: inline-block; background: #2196f3; color: white; padding: 5px 10px; border-radius: 20px; margin: 5px; font-size: 14px;}
+
+        /* 🌟 狀態標籤 */
+        .lvl-badge { background: #FFD700; color: #b8860b; padding: 3px 10px; border-radius: 15px; font-size: 16px; font-weight: bold; border: 2px solid #b8860b; vertical-align: middle;}
+        .exp-text { font-size: 16px; color: #555; font-weight: bold; margin-bottom: 10px;}
+
+        /* 魔王特效 */
+        .boss-image { width: 200px; height: 200px; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); transition: all 0.2s ease; margin-bottom: 10px;}
+        .projector-boss { width: 350px; height: 350px; } 
+
+        .ultimate-hit {
+            animation: ultimate-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            background-color: rgba(255, 0, 0, 0.6) !important;
+            box-shadow: 0 0 50px red !important;
+            filter: brightness(1.5) saturate(2) !important;
+            border-radius: 50%;
+        }
+
+        /* 👿 狂暴模式視覺 */
+        .boss-enraged {
+            filter: brightness(0.8) sepia(1) hue-rotate(250deg) saturate(3) drop-shadow(0 0 30px purple) !important;
+            transform: scale(1.1);
+        }
+
+        @keyframes ultimate-shake {
+            0% { transform: scale(1) rotate(0deg); }
+            20% { transform: scale(1.3) rotate(15deg); }
+            40% { transform: scale(0.9) rotate(-10deg); }
+            60% { transform: scale(1.2) rotate(5deg); }
+            80% { transform: scale(0.95) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        /* 血條 */
+        .hp-text { font-size: 22px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 0px white;}
+        .hp-bar-bg { width: 100%; height: 30px; background-color: #333; border-radius: 15px; border: 3px solid #fff; overflow: hidden; box-shadow: inset 0 0 10px black; margin: 0 auto;}
+        .hp-bar-fill { height: 100%; transition: width 0.3s ease-out; }
+        .boss-fill { background: linear-gradient(90deg, #ff0000, #ff4d4d); width: 100%; }
+        .player-fill { background: linear-gradient(90deg, #00b300, #33ff33); width: 100%; }
+        .exp-fill { background: linear-gradient(90deg, #FFD700, #FFA500); width: 0%; height: 100%; transition: width 0.3s;}
+
+        #timer-display { font-size: 28px; font-weight: bold; color: #e21b3c; margin: 10px 0; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #e21b3c; display: inline-block;}
+
+        .options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 20px; }
+        .option-btn { padding: 20px; font-size: 22px; font-weight: bold; color: white; border-radius: 10px; border: none; cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);}
+        #btn-0 { background-color: #e21b3c; border-bottom: 5px solid #a3112a;} 
+        #btn-1 { background-color: #1368ce; border-bottom: 5px solid #0d4a96;} 
+        #btn-2 { background-color: #d89e00; border-bottom: 5px solid #9e7400;} 
+        #btn-3 { background-color: #26890c; border-bottom: 5px solid #1a5e08;} 
+        #qrcode { margin: 10px auto; display: flex; justify-content: center; }
+
+        .summary-container { display: flex; justify-content: space-between; gap: 20px; text-align: left;}
+        .summary-box { flex: 1; background: #fff; padding: 20px; border-radius: 10px; border: 2px solid #ddd;}
+        .summary-list { list-style: none; padding: 0; font-size: 18px; margin: 0;}
+        .summary-list li { padding: 8px 0; border-bottom: 1px dashed #ccc; display: flex; justify-content: space-between;}
+        .stat-item { background: #e3f2fd; padding: 10px; margin: 10px 0; border-radius: 8px; text-align: left; font-size: 16px;}
+        .stat-bar-bg { width: 100%; height: 10px; background: #ddd; border-radius: 5px; margin-top: 5px; overflow: hidden;}
+        .stat-bar-fill { height: 100%; background: #e21b3c; }
+    </style>
+</head>
+<body>
+
+    <audio id="sfx-attack" src="https://actions.google.com/sounds/v1/impacts/crash.ogg" preload="auto"></audio>
+    <audio id="sfx-hurt" src="https://actions.google.com/sounds/v1/weapons/retro_laser_shot.ogg" preload="auto"></audio>
+    <audio id="sfx-levelup" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg" preload="auto"></audio>
+    <audio id="sfx-heal" src="https://actions.google.com/sounds/v1/water/water_bubble.ogg" preload="auto"></audio>
+
+    <div id="screen-home" class="screen-page card">
+        <h1>🎮 勇者學園對戰平台</h1>
+        <p>請選擇你的身分：</p>
+        <button class="btn-teacher" onclick="switchScreen('screen-teacher-login')">👨‍🏫 我是老師 (進入後台)</button>
+        <button class="btn-student" onclick="switchScreen('screen-login')">🛡️ 我是勇者 (學生登入)</button>
+    </div>
+
+    <div id="screen-teacher-login" class="screen-page card hidden">
+        <h1>🔒 老師登入</h1>
+        <input type="password" id="teacher-pwd-input" placeholder="請輸入密碼">
+        <button class="btn-primary" onclick="verifyTeacherPassword()">登入</button>
+        <button class="btn-student" onclick="switchScreen('screen-home')">返回</button>
+    </div>
+
+    <div id="screen-teacher" class="screen-page card hidden">
+        <h1>👨‍🏫 老師發布後台</h1>
+        <select id="teacher-game-type">
+            <option value="boss_battle">⚔️ 勇者大戰魔王</option>
+        </select>
+        <input type="text" id="teacher-pin" placeholder="設定 PIN 碼">
+        <input type="number" id="teacher-hp" placeholder="設定魔王總血量" value="1000">
+        <p>⌛ 設定每一題作答時間（秒）：</p>
+        <input type="number" id="teacher-time-limit" placeholder="預設 50 秒" value="50">
+        <p>📝 貼上題庫：</p>
+        <textarea id="teacher-quiz" rows="5">台灣最高的山是？	阿里山	玉山	陽明山	合歡山	2
+9乘以8等於多少？	64	81	72	56	3
+水在哪個溫度會結冰？	100度	50度	10度	0度	4</textarea>
+        <button class="btn-primary" onclick="createGame()">🚀 發布遊戲並開啟大廳</button>
+        <p id="teacher-msg" style="color:red; font-weight:bold;"></p>
+    </div>
+
+    <div id="screen-teacher-lobby" class="screen-page card hidden" style="max-width: 800px;">
+        <h1 id="lobby-game-title">等待勇者集結...</h1>
+        <h2 id="lobby-pin-display" style="color:#e21b3c; font-size: 30px;"></h2>
+        <div id="qrcode"></div>
+        <h2 id="teacher-player-count">已加入勇者：0 人</h2>
+        <div class="player-list-box" id="teacher-player-names"></div>
+        <button class="btn-danger" style="font-size: 24px; padding: 20px 40px; margin-top: 20px;" onclick="startBattle()">⚔️ 正式開始打怪！ ⚔️</button>
+    </div>
+
+    <div id="screen-login" class="screen-page card hidden">
+        <h1>🛡️ 勇者登入區</h1>
+        <input type="text" id="student-pin" placeholder="請輸入 PIN 碼">
+        <input type="text" id="student-name" placeholder="請輸入暱稱">
+        <button class="btn-student" onclick="joinLobby()">進入集結大廳</button>
+        <p id="student-msg" style="color:red; font-weight:bold;"></p>
+    </div>
+
+    <div id="screen-student-lobby" class="screen-page card hidden">
+        <h1 id="student-lobby-name"></h1>
+        <h2>⏳ 正在等待老師開始遊戲...</h2>
+        <img src="https://cdn-icons-png.flaticon.com/512/1055/1055673.png" style="width: 100px; filter: grayscale(100%); margin: 20px 0;">
+        <p style="color: #666; font-weight: bold;">請抬頭看黑板大螢幕確認名字！</p>
+    </div>
+
+    <div id="screen-projector" class="screen-page card hidden" style="max-width: 800px; background: rgba(0,0,0,0.8); color: white; border: none;">
+        <h1 style="color: #ffcc00; text-shadow: 0 0 10px #ffcc00;">🔥 全班集火攻擊中 🔥</h1>
+        
+        <h2 id="proj-rage-warning" class="hidden" style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff; animation: pulse 1s infinite;">⚠️ 魔王進入狂暴狀態！傷害加倍！⚠️</h2>
+
+        <div id="projector-hit-container" style="display:inline-block; padding:10px;">
+            <img id="projector-boss-img" class="boss-image projector-boss" src="https://cdn-icons-png.flaticon.com/512/1055/1055673.png">
+        </div>
+        <div class="hp-text" id="projector-boss-hp-text" style="color: #ff4d4d;">👿 魔王血量</div>
+        <div class="hp-bar-bg" style="width: 80%; height: 40px;">
+            <div id="projector-boss-hp-fill" class="hp-bar-fill boss-fill"></div>
+        </div>
+        <button style="margin-top: 30px; background: #607D8B;" onclick="triggerGameEnd()">🛑 結束戰鬥並觀看戰報</button>
+    </div>
+
+    <div id="screen-game" class="screen-page hidden" style="max-width: 800px; width: 90%; padding: 0;">
+        <div class="card" style="margin-top: 0; padding: 20px;">
+            <h2 id="display-player-name" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
+            
+            <div id="student-hit-container" style="display:inline-block; padding:10px;">
+                <img id="student-boss-img" class="boss-image" src="https://cdn-icons-png.flaticon.com/512/1055/1055673.png">
+            </div>
+            
+            <h3 id="student-rage-warning" class="hidden" style="color: #ff00ff; margin: 0;">⚠️ 狂暴狀態：答錯扣血加倍！</h3>
+            
+            <div class="hp-text boss-color" id="student-boss-hp-text">👿 魔王血量</div>
+            <div class="hp-bar-bg"><div id="student-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
+        </div>
+        
+        <div class="card" style="padding: 15px; margin-top: 15px;">
+            <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
+            <div class="hp-bar-bg" style="margin-bottom: 10px;"><div id="player-hp-fill" class="hp-bar-fill player-fill"></div></div>
+            
+            <div class="exp-text" id="ui-exp-text">🌟 EXP: 0 / 30</div>
+            <div class="hp-bar-bg" style="height: 10px; border: 1px solid #ccc;"><div id="ui-exp-fill" class="exp-fill"></div></div>
+            
+            <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5;">🎒 喝生命藥水 (擁有: 0瓶)</button>
+        </div>
+
+        <div class="card" style="padding: 15px; margin-top: 15px;">
+            <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
+            <h2 id="question-text" style="margin: 0;">載入中...</h2>
+        </div>
+        <div class="options-container" id="options-box">
+            <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
+            <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
+            <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
+            <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
+        </div>
+    </div>
+
+    <div id="screen-summary-teacher" class="screen-page card hidden" style="max-width: 900px; width: 95%;">
+        <h1>📊 戰鬥結算報告</h1>
+        <div class="summary-container">
+            <div class="summary-box">
+                <h2 style="color: #4CAF50; margin-top: 0;">🏆 輸出 MVP (前五名)</h2>
+                <ul class="summary-list" id="mvp-list"></ul>
+            </div>
+            <div class="summary-box">
+                <h2 style="color: #e21b3c; margin-top: 0;">🚑 醫療班 (急需救援)</h2>
+                <ul class="summary-list" id="help-list"></ul>
+            </div>
+        </div>
+        <h2 style="text-align: left; margin-top: 30px;">📝 題目錯誤率分析</h2>
+        <div id="question-stats-list"></div>
+        <button class="btn-primary" onclick="location.reload()" style="margin-top: 20px;">🔄 回首頁開啟新遊戲</button>
+    </div>
+
+    <div id="screen-summary-student" class="screen-page card hidden">
+        <h1>戰鬥結束！</h1>
+        <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <h2 id="my-final-score" style="color: #1565C0; margin: 0;">你的成績結算中...</h2>
+        </div>
+        <h3 style="color: #4CAF50; text-align: left;">🏆 班級輸出 MVP 前五名</h3>
+        <ul class="summary-list" id="student-mvp-list" style="text-align: left;"></ul>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+         apiKey: "AIzaSyCUctXqiDyy69WlCAaXvyMC2vOerNzQLJI",
+         authDomain: "class-boss-game.firebaseapp.com",
+         databaseURL: "https://class-boss-game-default-rtdb.firebaseio.com",
+         projectId: "class-boss-game",
+         storageBucket: "class-boss-game.firebasestorage.app",
+         messagingSenderId: "850854604889",
+         appId: "1:850854604889:web:0c139b2f2865126dd8c148"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const gameRef = db.ref('CurrentGame');
+
+        let quizData = [];
+        let currentQuestionIndex = 0;
+        
+        // 🌟 RPG 核心變數
+        const playerMaxHP = 100;
+        let playerHP = playerMaxHP;
+        let playerLevel = 1;
+        let playerExp = 0;
+        let playerPotions = 0;
+        
+        let bossTotalHP = 1000; 
+        let bossHP = bossTotalHP;
+        let isBossEnraged = false; // 狂暴狀態標記
+
+        let currentRole = ""; 
+        let timeLeft = 50;
+        let timeLimitSetting = 50;
+        let timerInterval;
+
+        let myPlayerId = ""; 
+        let myCorrectCount = 0;
+        let myWrongCount = 0;
+
+        function silentUnlockAudio() {
+            ['sfx-attack', 'sfx-hurt', 'sfx-levelup', 'sfx-heal'].forEach(id => {
+                let audio = document.getElementById(id);
+                if (audio) { audio.volume = 0; audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio.volume = 1; }).catch(() => {}); }
+            });
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen-page').forEach(page => page.classList.add('hidden'));
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function verifyTeacherPassword() {
+            const pwdInput = document.getElementById('teacher-pwd-input');
+            if (pwdInput.value === "8888") { pwdInput.value = ""; switchScreen('screen-teacher'); } else { alert("❌ 密碼錯誤！"); pwdInput.value = ""; }
+        }
+
+        function createGame() {
+            const pin = document.getElementById('teacher-pin').value.trim();
+            const hp = document.getElementById('teacher-hp').value;
+            const timeLimit = document.getElementById('teacher-time-limit').value;
+            const rawText = document.getElementById('teacher-quiz').value.trim();
+            const gameType = document.getElementById('teacher-game-type').value;
+
+            if(!pin || !hp || !rawText) { alert("請填寫完整！"); return; }
+
+            try {
+                let parsedQuiz = [];
+                rawText.split('\n').forEach(line => {
+                    let cols = line.includes('\t') ? line.split('\t') : line.split(',');
+                    if(cols.length >= 6) parsedQuiz.push({ question: cols[0].trim(), options: [cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim()], correctIndex: parseInt(cols[5].replace(/[^0-9]/g, '')) - 1 });
+                });
+                
+                gameRef.set({ 
+                    pinCode: pin, gameType: gameType, timeLimit: parseInt(timeLimit), 
+                    bossTotalHP: parseInt(hp), currentBossHP: parseInt(hp), bossEnraged: false,
+                    questions: parsedQuiz, status: 'waiting', players: {}, questionStats: {} 
+                }).then(() => {
+                    currentRole = "projector";
+                    document.getElementById('lobby-pin-display').innerText = `👉 PIN：${pin}`;
+                    const qrContainer = document.getElementById("qrcode");
+                    qrContainer.innerHTML = ""; new QRCode(qrContainer, { text: window.location.href.split('?')[0] + "?pin=" + pin, width: 200, height: 200 });
+                    switchScreen('screen-teacher-lobby');
+                    listenToPlayersJoined(); 
+                });
+            } catch (e) { alert("格式錯誤！"); }
+        }
+
+        function listenToPlayersJoined() {
+            gameRef.child('players').on('value', snap => {
+                let players = snap.val() || {};
+                document.getElementById('teacher-player-count').innerText = `已加入勇者：${Object.keys(players).length} 人`;
+                document.getElementById('teacher-player-names').innerHTML = Object.values(players).map(p => `<span class="player-tag">${p.name}</span>`).join('');
+            });
+        }
+
+        function startBattle() {
+            silentUnlockAudio();
+            gameRef.child('status').set('playing').then(() => { switchScreen('screen-projector'); updateRPGUI(); startGameListener(); });
+        }
+
+        window.onload = function() {
+            const urlPin = new URLSearchParams(window.location.search).get('pin');
+            if (urlPin) { document.getElementById('student-pin').value = urlPin; switchScreen('screen-login'); }
+        }
+
+        function joinLobby() {
+            silentUnlockAudio();
+            const inputPin = document.getElementById('student-pin').value.trim();
+            const playerName = document.getElementById('student-name').value.trim();
+            if(!inputPin || !playerName) { alert("請填寫完整！"); return; }
+            gameRef.once('value', snap => {
+                const data = snap.val();
+                if (data && data.pinCode === inputPin) {
+                    currentRole = "student";
+                    quizData = data.questions;
+                    bossTotalHP = data.bossTotalHP;
+                    bossHP = data.currentBossHP;
+                    timeLimitSetting = data.timeLimit || 50;
+                    myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
+                    
+                    gameRef.child('players').child(myPlayerId).set({ name: playerName, correct: 0, wrong: 0 });
+                    
+                    document.getElementById('student-lobby-name').innerText = `嗨，${playerName}！`;
+                    document.getElementById('display-player-name').innerHTML = `${playerName} <span id="ui-level" class="lvl-badge">Lv.1</span>`;
+                    switchScreen('screen-student-lobby');
+                    listenToGameStart();
+                } else { alert("PIN碼錯誤或遊戲已開始！"); }
+            });
+        }
+
+        function listenToGameStart() {
+            gameRef.child('status').on('value', snap => { 
+                let status = snap.val();
+                if (status === 'playing' && currentRole === 'student') { 
+                    currentQuestionIndex = 0; playerHP = playerMaxHP; 
+                    switchScreen('screen-game'); updateRPGUI(); startGameListener(); loadQuestion(); 
+                }
+                if (status === 'finished' && currentRole === 'student') {
+                    clearInterval(timerInterval);
+                    generateStudentSummary();
+                }
+            });
+        }
+
+        // 🌟 更新所有 RPG UI (血條、經驗值、背包、狂暴狀態)
+        function updateRPGUI() {
+            let bossPercent = Math.max(0, (bossHP / bossTotalHP) * 100);
+            
+            // 檢查是否進入狂暴模式 (血量 <= 50%)
+            if (bossPercent <= 50 && !isBossEnraged) {
+                isBossEnraged = true;
+                if(currentRole === "projector") {
+                    document.getElementById('proj-rage-warning').classList.remove('hidden');
+                    document.getElementById('projector-boss-img').classList.add('boss-enraged');
+                } else if(currentRole === "student") {
+                    document.getElementById('student-rage-warning').classList.remove('hidden');
+                    document.getElementById('student-boss-img').classList.add('boss-enraged');
+                }
+            }
+
+            if (currentRole === "projector") { 
+                document.getElementById('projector-boss-hp-fill').style.width = bossPercent + '%'; 
+                document.getElementById('projector-boss-hp-text').innerText = `👿 魔王：${bossHP}`; 
+            }
+            else if (currentRole === "student") { 
+                document.getElementById('student-boss-hp-fill').style.width = bossPercent + '%'; 
+                document.getElementById('student-boss-hp-text').innerText = `👿 魔王：${bossHP}`;
+                
+                let pPercent = Math.max(0, (playerHP / playerMaxHP) * 100);
+                document.getElementById('player-hp-fill').style.width = pPercent + '%';
+                document.getElementById('player-hp-text').innerText = `🛡️ 你的血量：${playerHP}`;
+
+                // 🌟 更新經驗值與等級
+                let expNeeded = playerLevel * 30; // 升級所需經驗：30, 60, 90...
+                let expPercent = (playerExp / expNeeded) * 100;
+                document.getElementById('ui-level').innerText = `Lv.${playerLevel}`;
+                document.getElementById('ui-exp-text').innerText = `🌟 EXP: ${playerExp} / ${expNeeded}`;
+                document.getElementById('ui-exp-fill').style.width = expPercent + '%';
+
+                // 🌟 更新藥水按鈕狀態
+                let btnPotion = document.getElementById('btn-potion');
+                btnPotion.innerText = `🎒 喝生命藥水 (擁有: ${playerPotions}瓶)`;
+                if(playerPotions > 0 && playerHP < playerMaxHP) {
+                    btnPotion.disabled = false;
+                    btnPotion.style.opacity = "1";
+                } else {
+                    btnPotion.disabled = true;
+                    btnPotion.style.opacity = "0.5";
+                }
+            }
+        }
+
+        // 🌟 喝藥水功能
+        function usePotion() {
+            if (playerPotions > 0 && playerHP < playerMaxHP) {
+                playerPotions--;
+                playerHP = Math.min(playerMaxHP, playerHP + 30); // 回復 30 血，不超過滿血
+                updateRPGUI();
+                
+                // 播放補血音效與特效
+                let sfx = document.getElementById('sfx-heal');
+                if(sfx) { sfx.currentTime = 0; sfx.play().catch(()=>{}); }
+                document.body.classList.add('flash-green');
+                setTimeout(() => document.body.classList.remove('flash-green'), 300);
+            }
+        }
+
+        function triggerUltimateHitEffect() {
+            const sfx = document.getElementById('sfx-attack');
+            if(sfx) { sfx.currentTime = 0; sfx.play().catch(() => {}); }
+            const containerId = currentRole === "projector" ? 'projector-hit-container' : 'student-hit-container';
+            const container = document.getElementById(containerId);
+            if(container) { container.classList.remove('ultimate-hit'); void container.offsetWidth; container.classList.add('ultimate-hit'); }
+        }
+
+        function startGameListener() {
+            gameRef.child('currentBossHP').on('value', snap => {
+                let newHP = snap.val();
+                if (newHP !== null && newHP < bossHP) triggerUltimateHitEffect();
+                if (newHP !== null) bossHP = newHP;
+                updateRPGUI();
+                if (bossHP <= 0 && currentRole === "projector") { triggerGameEnd(); }
+            });
+        }
+
+        function triggerGameEnd() {
+            gameRef.child('status').set('finished').then(() => { generateTeacherSummary(); });
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = timeLimitSetting;
+            document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
+                if (timeLeft <= 0) { clearInterval(timerInterval); handleWrongAnswer(); }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (bossHP <= 0 || playerHP <= 0 || currentQuestionIndex >= quizData.length) { 
+                clearInterval(timerInterval); 
+                document.getElementById('question-text').innerText = "作答完畢！請看大螢幕等待結算...";
+                document.getElementById('options-box').classList.add('hidden');
+                return; 
+            }
+            const q = quizData[currentQuestionIndex];
+            document.getElementById('question-text').innerText = q.question;
+            for(let i=0; i<4; i++) document.getElementById('btn-' + i).innerText = q.options[i];
+            startTimer();
+        }
+
+        // 🌟 答錯：計算狂暴傷害
+        function handleWrongAnswer() {
+            const sfx = document.getElementById('sfx-hurt');
+            if(sfx) { sfx.currentTime = 0; sfx.play().catch(() => {}); }
+            
+            // 狂暴模式傷害加倍！
+            let dmgTaken = isBossEnraged ? 50 : 25;
+            playerHP -= dmgTaken; 
+            updateRPGUI();
+
+            document.body.classList.add('flash-red'); setTimeout(() => document.body.classList.remove('flash-red'), 300);
+            
+            myWrongCount++;
+            gameRef.child('players').child(myPlayerId).update({ wrong: myWrongCount });
+            gameRef.child('questionStats').child(currentQuestionIndex).child('wrong').transaction(curr => (curr || 0) + 1);
+
+            if (playerHP <= 0) { 
+                document.getElementById('question-text').innerText = "💀 你倒下了，請等待結算..."; 
+                document.getElementById('options-box').classList.add('hidden');
+                return; 
+            }
+            currentQuestionIndex++; setTimeout(loadQuestion, 500);
+        }
+
+        // 🌟 答對：經驗值、升級、掉寶、傷害計算
+        function checkAnswer(idx) {
+            clearInterval(timerInterval);
+            if (idx === quizData[currentQuestionIndex].correctIndex) {
+                
+                // 1. 計算給魔王的傷害 (等級越高，傷害越大)
+                let baseDmg = 40;
+                let finalDmg = baseDmg + ((playerLevel - 1) * 10); // Lv1=40, Lv2=50, Lv3=60...
+                let newHP = Math.max(0, bossHP - finalDmg);
+                gameRef.child('currentBossHP').set(newHP);
+                
+                // 2. 處理經驗值與升級
+                playerExp += 10;
+                let expNeeded = playerLevel * 30;
+                if (playerExp >= expNeeded) {
+                    playerLevel++;
+                    playerExp -= expNeeded; // 扣除升級消耗的經驗
+                    
+                    // 升級音效與特效
+                    let sfxLvl = document.getElementById('sfx-levelup');
+                    if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); }
+                    document.body.classList.add('flash-gold');
+                    setTimeout(() => document.body.classList.remove('flash-gold'), 500);
+                }
+
+                // 3. 處理隨機掉寶 (30% 機率掉落生命藥水)
+                if (Math.random() <= 0.3) {
+                    playerPotions++;
+                    // 稍微用個 alert 提示學生 (您也可以改成更柔和的 UI 提示)
+                    setTimeout(() => alert("🎁 恭喜！魔王掉落了一瓶【生命藥水】！"), 100);
+                }
+
+                updateRPGUI(); // 更新所有 UI 畫面
+
+                // 記錄戰績
+                myCorrectCount++;
+                gameRef.child('players').child(myPlayerId).update({ correct: myCorrectCount });
+                gameRef.child('questionStats').child(currentQuestionIndex).child('correct').transaction(curr => (curr || 0) + 1);
+
+                currentQuestionIndex++; setTimeout(loadQuestion, 500);
+            } else { handleWrongAnswer(); }
+        }
+
+        // --- 結算報表生成 ---
+        function generateTeacherSummary() {
+            switchScreen('screen-summary-teacher');
+            gameRef.once('value', snap => {
+                const data = snap.val();
+                if(!data) return;
+                let players = Object.values(data.players || {});
+                let sortedByCorrect = [...players].sort((a, b) => (b.correct || 0) - (a.correct || 0));
+                let sortedByWrong = [...players].sort((a, b) => (b.wrong || 0) - (a.wrong || 0));
+
+                let mvpHTML = "";
+                sortedByCorrect.slice(0, 5).forEach((p, i) => { if((p.correct || 0) > 0) mvpHTML += `<li><span>第 ${i+1} 名：${p.name}</span> <span>✅ ${p.correct} 題</span></li>`; });
+                document.getElementById('mvp-list').innerHTML = mvpHTML || "<li>無人答對任何題目</li>";
+
+                let helpHTML = "";
+                sortedByWrong.slice(0, 5).forEach((p, i) => { if((p.wrong || 0) > 0) helpHTML += `<li><span>⚠️ 需要急救：${p.name}</span> <span>❌ 錯 ${p.wrong} 題</span></li>`; });
+                document.getElementById('help-list').innerHTML = helpHTML || "<li>沒人答錯！</li>";
+
+                let statsHTML = "";
+                let qStats = data.questionStats || {};
+                data.questions.forEach((q, index) => {
+                    let stat = qStats[index] || { correct: 0, wrong: 0 };
+                    let total = (stat.correct || 0) + (stat.wrong || 0);
+                    let wrongRate = total === 0 ? 0 : Math.round(((stat.wrong || 0) / total) * 100);
+                    statsHTML += `<div class="stat-item"><strong>Q${index+1}: ${q.question}</strong><br><span style="color: green;">✔ 答對：${stat.correct || 0} 人</span> | <span style="color: red;">✖ 答錯：${stat.wrong || 0} 人</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${wrongRate}%;"></div></div><div style="text-align: right; font-size: 14px; margin-top: 2px;">錯誤率 ${wrongRate}%</div></div>`;
+                });
+                document.getElementById('question-stats-list').innerHTML = statsHTML;
+            });
+        }
+
+        function generateStudentSummary() {
+            switchScreen('screen-summary-student');
+            document.getElementById('my-final-score').innerText = `你的戰績：✅ 答對 ${myCorrectCount} 題 ｜ ❌ 答錯 ${myWrongCount} 題`;
+            gameRef.once('value', snap => {
+                const data = snap.val();
+                if(data && data.players) {
+                    let players = Object.values(data.players);
+                    let sortedByCorrect = [...players].sort((a, b) => (b.correct || 0) - (a.correct || 0));
+                    let mvpHTML = "";
+                    sortedByCorrect.slice(0, 5).forEach((p, i) => { if((p.correct || 0) > 0) mvpHTML += `<li><span>🏅 第 ${i+1} 名：${p.name}</span> <span style="float:right;">✅ ${p.correct}</span></li>`; });
+                    document.getElementById('student-mvp-list').innerHTML = mvpHTML;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
