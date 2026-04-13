@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 7.6 (純淨置中版)</title>
+    <title>勇者學園對戰平台 8.0 (雙模式切換版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -47,41 +47,15 @@
         .lvl-badge { background: #FFD700; color: #b8860b; padding: 3px 10px; border-radius: 15px; font-size: 16px; font-weight: bold; border: 2px solid #b8860b; vertical-align: middle;}
         .exp-text { font-size: 16px; color: #555; font-weight: bold; margin-bottom: 5px;}
 
-        .boss-image { 
-            width: 150px; height: 150px; object-fit: contain; 
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); 
-            transition: all 0.2s ease; margin-bottom: 10px;
-            animation: boss-idle 3s ease-in-out infinite; 
-        }
+        .boss-image { width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); transition: all 0.2s ease; margin-bottom: 10px; animation: boss-idle 3s ease-in-out infinite; }
         .projector-boss { width: 300px; height: 300px; } 
 
-        @keyframes boss-idle {
-            0% { transform: translateX(-15px) translateY(0px); }
-            50% { transform: translateX(15px) translateY(-10px); }
-            100% { transform: translateX(-15px) translateY(0px); }
-        }
+        @keyframes boss-idle { 0% { transform: translateX(-15px) translateY(0px); } 50% { transform: translateX(15px) translateY(-10px); } 100% { transform: translateX(-15px) translateY(0px); } }
 
-        .ultimate-hit {
-            animation: ultimate-shake 0.5s cubic-bezier(.36,.07,.19,.97) both !important;
-            background-color: rgba(255, 0, 0, 0.6) !important;
-            box-shadow: 0 0 50px red !important;
-            filter: brightness(1.5) saturate(2) !important;
-            border-radius: 50%;
-        }
+        .ultimate-hit { animation: ultimate-shake 0.5s cubic-bezier(.36,.07,.19,.97) both !important; background-color: rgba(255, 0, 0, 0.6) !important; box-shadow: 0 0 50px red !important; filter: brightness(1.5) saturate(2) !important; border-radius: 50%; }
+        .boss-enraged { filter: brightness(0.8) sepia(1) hue-rotate(250deg) saturate(3) drop-shadow(0 0 30px purple) !important; transform: scale(1.1); }
 
-        .boss-enraged {
-            filter: brightness(0.8) sepia(1) hue-rotate(250deg) saturate(3) drop-shadow(0 0 30px purple) !important;
-            transform: scale(1.1);
-        }
-
-        @keyframes ultimate-shake {
-            0% { transform: scale(1) rotate(0deg); }
-            20% { transform: scale(1.3) rotate(15deg); }
-            40% { transform: scale(0.9) rotate(-10deg); }
-            60% { transform: scale(1.2) rotate(5deg); }
-            80% { transform: scale(0.95) rotate(-5deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
+        @keyframes ultimate-shake { 0% { transform: scale(1) rotate(0deg); } 20% { transform: scale(1.3) rotate(15deg); } 40% { transform: scale(0.9) rotate(-10deg); } 60% { transform: scale(1.2) rotate(5deg); } 80% { transform: scale(0.95) rotate(-5deg); } 100% { transform: scale(1) rotate(0deg); } }
         
         .hp-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 0px white;}
         .hp-bar-bg { width: 100%; height: 25px; background-color: #333; border-radius: 15px; border: 3px solid #fff; overflow: hidden; box-shadow: inset 0 0 10px black; margin: 0 auto;}
@@ -91,6 +65,7 @@
         .exp-fill { background: linear-gradient(90deg, #FFD700, #FFA500); width: 0%; height: 100%; transition: width 0.3s;}
 
         #timer-display { font-size: 24px; font-weight: bold; color: #e21b3c; margin: 10px 0; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #e21b3c; display: inline-block;}
+        .bomb-timer { font-size: 40px !important; font-family: 'Courier New', Courier, monospace; letter-spacing: 2px; text-shadow: 0 0 15px red; animation: pulse-fast 1s infinite;}
 
         .options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 15px; }
         .option-btn { padding: 15px; font-size: 18px; font-weight: bold; color: white; border-radius: 10px; border: none; cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); min-height: 80px; display: flex; align-items: center; justify-content: center;}
@@ -98,8 +73,7 @@
         #btn-1 { background-color: #1368ce; border-bottom: 5px solid #0d4a96;} 
         #btn-2 { background-color: #d89e00; border-bottom: 5px solid #9e7400;} 
         #btn-3 { background-color: #26890c; border-bottom: 5px solid #1a5e08;} 
-
-        /* 🌟 QR Code 核彈級置中修正 */
+        
         .qr-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; margin: 20px 0; }
         #qrcode { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block;}
 
@@ -143,7 +117,11 @@
         .lb-item:nth-child(2) { color: #E0E0E0; } 
         .lb-item:nth-child(3) { color: #CD7F32; } 
 
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        /* 🌟 炸彈模式專屬樣式 */
+        .bomb-icon { font-size: 100px; animation: bomb-shake 0.5s infinite; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));}
+        .wire-fill { background: linear-gradient(90deg, #2196f3, #00bcd4) !important; }
+        @keyframes bomb-shake { 0% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } 100% { transform: rotate(-5deg); } }
+        @keyframes pulse-fast { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fade-out { to { opacity: 0; transform: translateY(-20px); } }
 
@@ -169,6 +147,7 @@
             .lb-item { font-size: 18px; margin: 10px 0;}
             .lb-item:first-child { font-size: 20px; }
             .log-toast { font-size: 24px; padding: 15px 25px; }
+            .bomb-icon { font-size: 150px; }
         }
     </style>
 </head>
@@ -199,12 +178,17 @@
     <div id="screen-teacher" class="screen-page card hidden" style="max-width: 800px;">
         <h1>👨‍🏫 老師發布後台</h1>
         
+        <select id="teacher-game-type" onchange="toggleGameSettings()" style="width: 100%; border: 3px solid #607D8B; font-weight: bold; color: #333; font-size: 22px; margin-bottom: 15px; background-color: #ECEFF1;">
+            <option value="boss_battle">⚔️ 模式一：勇者大戰魔王 (全班同步)</option>
+            <option value="bomb_defusal">💣 模式二：生死時速拆彈 (各自解題)</option>
+        </select>
+
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 10px 0;">
             <input type="text" id="teacher-pin" placeholder="遊戲 PIN 碼" style="width: 65%; margin: 0; font-weight: bold; color: #e21b3c;">
             <button onclick="generateRandomPin()" style="width: 30%; margin: 0; padding: 15px 0; font-size: 16px; background: #607D8B;">🎲 換一組</button>
         </div>
 
-        <div style="display: flex; gap: 15px; width: 100%; margin: 15px 0; padding: 15px; background: #f5f5f5; border-radius: 10px; border: 2px dashed #999;">
+        <div id="setting-boss" style="display: flex; gap: 15px; width: 100%; margin: 15px 0; padding: 15px; background: #f5f5f5; border-radius: 10px; border: 2px dashed #999;">
             <div style="flex: 1; text-align: left;">
                 <label style="font-weight: bold; color: #1565C0; font-size: 16px;">👥 預計全班人數 (算血量)</label>
                 <input type="number" id="teacher-expected-players" value="24" style="border: 2px solid #2196F3; background: #e3f2fd; margin-top: 5px;">
@@ -214,7 +198,19 @@
                 <input type="number" id="teacher-time-limit" value="60" style="border: 2px solid #e21b3c; background: #ffebee; margin-top: 5px;">
             </div>
         </div>
-        <p style="text-align: left; margin: -5px 0 15px 5px; font-size: 14px; color: #555; font-weight: bold;">💡 系統會根據「全班人數」與您建立的「題目數量」自動為您計算最完美的魔王血量！</p>
+
+        <div id="setting-bomb" class="hidden" style="display: flex; gap: 15px; width: 100%; margin: 15px 0; padding: 15px; background: #FFF3E0; border-radius: 10px; border: 2px dashed #FF9800;">
+            <div style="flex: 1; text-align: left;">
+                <label style="font-weight: bold; color: #E65100; font-size: 16px;">👥 預計全班人數 (算目標題數)</label>
+                <input type="number" id="teacher-bomb-players" value="24" style="border: 2px solid #FF9800; background: #FFF8E1; margin-top: 5px;">
+            </div>
+            <div style="flex: 1; text-align: left;">
+                <label style="font-weight: bold; color: #D32F2F; font-size: 16px;">⏱️ 炸彈倒數時間 (分鐘)</label>
+                <input type="number" id="teacher-bomb-time" value="5" style="border: 2px solid #D32F2F; background: #FFEBEE; margin-top: 5px;">
+            </div>
+        </div>
+        
+        <p style="text-align: left; margin: -5px 0 15px 5px; font-size: 14px; color: #555; font-weight: bold;" id="setting-hint">💡 系統會根據「全班人數」與您建立的「題目數量」自動為您計算最完美的魔王血量！</p>
         
         <div class="save-load-box">
             <h3 style="margin-top: 0; color: #1565C0;">☁️ 雲端題庫中心</h3>
@@ -252,14 +248,10 @@
     <div id="screen-teacher-lobby" class="screen-page card hidden" style="max-width: 800px;">
         <h1 id="lobby-game-title">等待勇者集結...</h1>
         <h2 id="lobby-pin-display" style="color:#e21b3c; font-size: 30px;"></h2>
-        
-        <div class="qr-wrapper">
-            <div id="qrcode"></div>
-        </div>
-
+        <div class="qr-wrapper"><div id="qrcode"></div></div>
         <h2 id="teacher-player-count">已加入勇者：0 人</h2>
         <div class="player-list-box" id="teacher-player-names"></div>
-        <button class="btn-danger" style="font-size: 24px; padding: 20px 40px; margin-top: 20px;" onclick="startBattle()">⚔️ 正式開始打怪！ ⚔️</button>
+        <button class="btn-danger" style="font-size: 24px; padding: 20px 40px; margin-top: 20px;" onclick="startBattle()">⚔️ 正式開始任務！ ⚔️</button>
     </div>
 
     <div id="screen-login" class="screen-page card hidden">
@@ -273,18 +265,15 @@
     <div id="screen-student-lobby" class="screen-page card hidden">
         <h1 id="student-lobby-name"></h1>
         <h2>⏳ 正在等待老師開始遊戲...</h2>
-        <img src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image" style="width: 100px; filter: grayscale(100%); margin: 20px 0;">
         <p style="color: #666; font-weight: bold;">請抬頭看黑板大螢幕確認名字！</p>
     </div>
 
-    <div id="screen-projector" class="screen-page card hidden" style="max-width: 900px; background: rgba(0,0,0,0.8); color: white; border: none; position: relative;">
-        
-        <div id="projector-leaderboard" class="leaderboard-box hidden">
+    <div id="screen-projector-boss" class="screen-page card hidden" style="max-width: 900px; background: rgba(0,0,0,0.8); color: white; border: none; position: relative;">
+        <div id="projector-leaderboard-boss" class="leaderboard-box hidden">
             <h3 class="lb-title">🏆 累積傷害排行</h3>
-            <div id="lb-list">等待勇者攻擊...</div>
+            <div id="lb-list-boss">等待勇者攻擊...</div>
         </div>
-
-        <div id="projector-log-container" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
+        <div id="projector-log-container-boss" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
 
         <div style="width: 90%; margin: 0 auto 20px auto; z-index: 10; position: relative;">
             <div style="color: #00E676; font-size: 22px; font-weight: bold; text-shadow: 1px 1px 2px black; text-align: left; margin-bottom: 5px;">✨ 全班集氣條 <span id="proj-energy-text">0%</span></div>
@@ -306,22 +295,56 @@
         <button style="margin-top: 30px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 結束戰鬥並觀看戰報</button>
     </div>
 
+    <div id="screen-projector-bomb" class="screen-page card hidden" style="max-width: 900px; background: rgba(20,20,20,0.9); color: white; border: 3px solid #e21b3c; position: relative;">
+        <div id="projector-leaderboard-bomb" class="leaderboard-box hidden">
+            <h3 class="lb-title" style="color:#4DD0E1; border-color:#4DD0E1;">🏆 拆彈菁英排行</h3>
+            <div id="lb-list-bomb">等待勇者剪線...</div>
+        </div>
+        <div id="projector-log-container-bomb" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
+
+        <h1 style="color: #FF5252; font-size: 40px; text-shadow: 0 0 15px red; margin-top: 20px;">💣 生死時速拆彈任務 💣</h1>
+        <div class="bomb-icon">🧨</div>
+        
+        <div style="background: rgba(255,0,0,0.1); padding: 20px; border-radius: 15px; border: 2px solid #FF5252; margin: 20px auto; width: 80%;">
+            <div style="font-size: 22px; color: #FFCDD2; margin-bottom: 10px;">⏳ 炸彈倒數計時</div>
+            <div id="proj-bomb-timer" class="bomb-timer">05:00.0</div>
+        </div>
+
+        <div style="width: 80%; margin: 30px auto;">
+            <div class="hp-text" id="proj-wire-text" style="color: #4DD0E1;">✂️ 全班拆除進度 (0 / 100)</div>
+            <div class="hp-bar-bg" style="height: 40px; border-color: #4DD0E1; background: #111;">
+                <div id="proj-wire-fill" class="hp-bar-fill wire-fill" style="width: 0%;"></div>
+            </div>
+        </div>
+        <button style="margin-top: 20px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 強制終止任務</button>
+    </div>
+
+
     <div id="screen-game" class="screen-page hidden" style="width: 100%; padding: 0;">
-        <div class="card" style="margin-top: 0;">
-            <h2 id="display-player-name" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
+        
+        <div id="ui-boss-zone" class="card" style="margin-top: 0;">
+            <h2 id="display-player-name-boss" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
             <div id="student-hit-container" style="display:inline-block; padding:5px;">
                 <img id="student-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image">
             </div>
-            <h3 id="student-rage-warning" class="hidden" style="color: #ff00ff; margin: 0;">⚠️ 狂暴狀態：答錯扣血加倍！</h3>
             <div class="hp-text boss-color" id="student-boss-hp-text">👿 魔王血量</div>
             <div class="hp-bar-bg"><div id="student-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
         </div>
+
+        <div id="ui-bomb-zone" class="card hidden" style="margin-top: 0; border-color: #e21b3c; background: #ffebee;">
+            <h2 id="display-player-name-bomb" style="margin-top:0; color: #c62828;">特務 </h2>
+            <div style="font-size: 60px; margin: 10px 0;">💣</div>
+            <div style="font-size: 20px; font-weight: bold; color: #c62828; margin-bottom: 10px;">⚠️ 快解題！答對加時，答錯扣秒！</div>
+            <div class="hp-text" id="student-bomb-progress-text" style="color: #00838F;">✂️ 個人進度: 0 / 10</div>
+        </div>
         
         <div class="card" style="margin-top: 10px;">
-            <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
-            <div class="hp-bar-bg" style="margin-bottom: 10px;"><div id="player-hp-fill" class="hp-bar-fill player-fill"></div></div>
-            <div class="exp-text" id="ui-exp-text">🌟 EXP: 0 / 30</div>
-            <div class="hp-bar-bg" style="height: 10px; border: 1px solid #ccc; margin-bottom: 10px;"><div id="ui-exp-fill" class="exp-fill"></div></div>
+            <div id="hp-exp-zone">
+                <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
+                <div class="hp-bar-bg" style="margin-bottom: 10px;"><div id="player-hp-fill" class="hp-bar-fill player-fill"></div></div>
+                <div class="exp-text" id="ui-exp-text">🌟 EXP: 0 / 30</div>
+                <div class="hp-bar-bg" style="height: 10px; border: 1px solid #ccc; margin-bottom: 10px;"><div id="ui-exp-fill" class="exp-fill"></div></div>
+            </div>
             
             <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
                 <span class="gold-text" id="ui-gold-text">💰 金幣: 0 G</span>
@@ -330,55 +353,60 @@
             <div class="buff-container" id="ui-buff-container"></div>
         </div>
         
-        <div class="card" style="margin-top: 10px; padding-bottom: 10px;">
-            <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
-            <h2 id="question-text" style="margin: 0;">載入中...</h2>
-        </div>
-        
-        <div class="options-container" id="options-box" style="width: 95%; max-width: 800px; margin: 10px auto;">
-            <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
-            <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
-            <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
-            <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
+        <div id="quiz-content-area" style="width: 100%;">
+            <div class="card" style="margin-top: 10px; padding-bottom: 10px;">
+                <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
+                <h2 id="question-text" style="margin: 0;">載入中...</h2>
+            </div>
+            
+            <div class="options-container" id="options-box" style="width: 95%; max-width: 800px; margin: 10px auto;">
+                <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
+                <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
+                <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
+                <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
+            </div>
         </div>
 
         <div class="card" style="margin-top: 10px; background: #fff8e1; border-color: #ffc107;">
-            <h3 style="margin: 0 0 5px 0; color: #f57f17; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                🏪 魔法道具商城
-            </h3>
-            <div class="shop-container">
+            <h3 style="margin: 0 0 5px 0; color: #f57f17;">🏪 魔法商城</h3>
+            
+            <div id="shop-boss" class="shop-container">
                 <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 30)">⚔️ 會心一擊<br><span style="font-size:12px; color:#f57f17;">(30G)</span></button>
                 <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 40)">🛡️ 絕對防禦<br><span style="font-size:12px; color:#f57f17;">(40G)</span></button>
-                <button class="shop-item" id="btn-shop-time" onclick="buyItem('time', 50)">⏱️ 時間暫停<br><span style="font-size:12px; color:#f57f17;">(50G)</span></button>
             </div>
-            <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5;">🎒 喝生命藥水 (擁有: 0瓶)</button>
+            
+            <div id="shop-bomb" class="shop-container hidden">
+                <button class="shop-item" id="btn-shop-timeadd" onclick="buyItem('timeadd', 30)">🕒 時間精華<br><span style="font-size:12px; color:#f57f17;">(+10秒 30G)</span></button>
+                <button class="shop-item" id="btn-shop-bombshield" onclick="buyItem('bombshield', 40)">🛡️ 防爆盾牌<br><span style="font-size:12px; color:#f57f17;">(擋扣秒 40G)</span></button>
+                <button class="shop-item" id="btn-shop-skip" onclick="buyItem('skip', 60)">✂️ 萬能剪刀<br><span style="font-size:12px; color:#f57f17;">(秒殺此題 60G)</span></button>
+            </div>
         </div>
     </div>
 
     <div id="screen-summary-teacher" class="screen-page card hidden" style="max-width: 900px; width: 95%;">
-        <h1>📊 戰鬥結算報告</h1>
+        <h1 id="summary-title-teacher">📊 戰鬥結算報告</h1>
         <button class="btn-primary" style="background-color: #217346; margin-bottom: 20px; font-size: 18px;" onclick="exportToCSV()">📥 下載全班成績單 (Excel)</button>
         <div class="summary-container">
             <div class="summary-box">
-                <h2 style="color: #4CAF50; margin-top: 0;">🏆 輸出 MVP (前五名)</h2>
+                <h2 style="color: #4CAF50; margin-top: 0;">🏆 MVP (前五名)</h2>
                 <ul class="summary-list" id="mvp-list"></ul>
             </div>
             <div class="summary-box">
-                <h2 style="color: #e21b3c; margin-top: 0;">🚑 醫療班 (急需救援)</h2>
+                <h2 style="color: #e21b3c; margin-top: 0;">🚑 急需救援</h2>
                 <ul class="summary-list" id="help-list"></ul>
             </div>
         </div>
-        <h2 style="text-align: left; margin-top: 30px;">📝 題目錯誤率分析 (點擊可看選項)</h2>
+        <h2 style="text-align: left; margin-top: 30px;">📝 題目錯誤率分析</h2>
         <div id="question-stats-list"></div>
         <button class="btn-primary" onclick="location.reload()" style="margin-top: 20px;">🔄 回首頁開啟新遊戲</button>
     </div>
 
     <div id="screen-summary-student" class="screen-page card hidden">
-        <h1>戰鬥結束！</h1>
+        <h1 id="summary-title-student">戰鬥結束！</h1>
         <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
             <h2 id="my-final-score" style="color: #1565C0; margin: 0;">你的成績結算中...</h2>
         </div>
-        <h3 style="color: #4CAF50; text-align: left;">🏆 班級輸出 MVP 前五名</h3>
+        <h3 style="color: #4CAF50; text-align: left;">🏆 班級 MVP 前五名</h3>
         <ul class="summary-list" id="student-mvp-list" style="text-align: left;"></ul>
     </div>
 
@@ -396,35 +424,25 @@
         const db = firebase.database();
         const gameRef = db.ref('CurrentGame');
 
+        // 遊戲全域變數
+        let currentGameType = "boss_battle";
         let quizData = [];
         let currentQuestionIndex = 0;
         
-        let playerMaxHP = 100;
-        let playerHP = playerMaxHP;
-        let playerLevel = 1;
-        let playerExp = 0;
-        let playerPotions = 0;
+        let playerMaxHP = 100; let playerHP = playerMaxHP; let playerLevel = 1; let playerExp = 0; let playerPotions = 0;
+        let playerGold = 0; let playerCombo = 0; let myTotalDamage = 0; let myCorrectCount = 0; let myWrongCount = 0;
+        let hasBuffDmg = false; let hasBuffShield = false; 
         
-        let playerGold = 0;
-        let playerCombo = 0;
-        let hasBuffDmg = false;
-        let hasBuffShield = false;
-        let isTimeFrozen = false;
+        let bossTotalHP = 1000; let bossHP = bossTotalHP; let isBossEnraged = false; 
         
-        let bossTotalHP = 1000; 
-        let bossHP = bossTotalHP;
-        let isBossEnraged = false; 
-
+        // 拆彈專屬變數
+        let bombEndTime = 0;
+        let globalWiresCut = 0;
+        let targetWires = 100;
+        
         let currentRole = ""; 
-        let timeLeft = 60; 
-        let timeLimitSetting = 60;
-        let timerInterval;
-
-        let myPlayerId = ""; 
-        let myPlayerName = ""; 
-        let myCorrectCount = 0;
-        let myWrongCount = 0;
-        let myTotalDamage = 0;
+        let timeLeft = 60; let timeLimitSetting = 60; let timerInterval;
+        let myPlayerId = ""; let myPlayerName = ""; 
 
         function silentUnlockAudio() {
             ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-heal', 'sfx-buy', 'sfx-ultimate'].forEach(id => {
@@ -436,6 +454,20 @@
         function switchScreen(screenId) {
             document.querySelectorAll('.screen-page').forEach(page => page.classList.add('hidden'));
             document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        // 🌟 教師切換遊戲模式的 UI 處理
+        function toggleGameSettings() {
+            const type = document.getElementById('teacher-game-type').value;
+            if (type === 'boss_battle') {
+                document.getElementById('setting-boss').classList.remove('hidden');
+                document.getElementById('setting-bomb').classList.add('hidden');
+                document.getElementById('setting-hint').innerText = "💡 系統會根據「全班人數」與您建立的「題目數量」自動為您計算最完美的魔王血量！";
+            } else {
+                document.getElementById('setting-boss').classList.add('hidden');
+                document.getElementById('setting-bomb').classList.remove('hidden');
+                document.getElementById('setting-hint').innerText = "💡 系統會根據「全班人數」決定總共要剪斷幾根線才能拆除炸彈！";
+            }
         }
 
         function verifyTeacherPassword() {
@@ -456,47 +488,34 @@
                     <span style="font-weight:bold; font-size:18px; color:#2e7d32;">Q:</span>
                     <input type="text" class="q-val q-input" value="${q}" placeholder="請輸入題目...">
                     <select class="ans-val q-input" style="flex: 0.5;">
-                        <option value="1" ${ans==1?'selected':''}>答案: A</option>
-                        <option value="2" ${ans==2?'selected':''}>答案: B</option>
-                        <option value="3" ${ans==3?'selected':''}>答案: C</option>
-                        <option value="4" ${ans==4?'selected':''}>答案: D</option>
+                        <option value="1" ${ans==1?'selected':''}>答案: A</option><option value="2" ${ans==2?'selected':''}>答案: B</option><option value="3" ${ans==3?'selected':''}>答案: C</option><option value="4" ${ans==4?'selected':''}>答案: D</option>
                     </select>
                     <button class="del-btn" onclick="this.parentElement.parentElement.remove()">❌</button>
                 </div>
                 <div class="opt-row">
-                    <input type="text" class="o1-val opt-input" value="${o1}" placeholder="A 選項">
-                    <input type="text" class="o2-val opt-input" value="${o2}" placeholder="B 選項">
-                    <input type="text" class="o3-val opt-input" value="${o3}" placeholder="C 選項">
-                    <input type="text" class="o4-val opt-input" value="${o4}" placeholder="D 選項">
+                    <input type="text" class="o1-val opt-input" value="${o1}" placeholder="A"><input type="text" class="o2-val opt-input" value="${o2}" placeholder="B"><input type="text" class="o3-val opt-input" value="${o3}" placeholder="C"><input type="text" class="o4-val opt-input" value="${o4}" placeholder="D">
                 </div>
             `;
             container.appendChild(box);
         }
 
         function toggleImportBox() { document.getElementById('import-section').classList.toggle('hidden'); }
-
         function processBatchImport() {
             const rawText = document.getElementById('import-textarea').value.trim();
             if(!rawText) { alert("請先貼上 Excel 的內容！"); return; }
-            let count = 0; let failCount = 0; let lines = rawText.split(/\r?\n/); 
+            let count = 0; let lines = rawText.split(/\r?\n/); 
             lines.forEach(line => {
                 if(!line.trim()) return; 
                 let separator = line.includes('\t') ? '\t' : ',';
                 let cols = line.split(separator).map(c => c.trim().replace(/^"|"$/g, '')); 
                 if(cols.length >= 6) {
-                    let len = cols.length;
-                    let ans = parseInt(cols[len - 1].replace(/[^0-9]/g, ''));
-                    if(isNaN(ans) || ans < 1 || ans > 4) ans = 1; 
+                    let len = cols.length; let ans = parseInt(cols[len - 1].replace(/[^0-9]/g, '')); if(isNaN(ans) || ans < 1 || ans > 4) ans = 1; 
                     let o4 = cols[len - 2]; let o3 = cols[len - 3]; let o2 = cols[len - 4]; let o1 = cols[len - 5];
                     let q = cols.slice(0, len - 5).join(' '); 
                     addQuestionBox(q, o1, o2, o3, o4, ans); count++;
-                } else { failCount++; }
+                }
             });
-            if (count > 0) {
-                let msg = `✅ 成功匯入 ${count} 題！`;
-                if(failCount > 0) msg += `\n⚠️ 有 ${failCount} 行資料跳過。`;
-                alert(msg); document.getElementById('import-textarea').value = ''; toggleImportBox(); 
-            } else { alert("❌ 匯入失敗！"); }
+            if (count > 0) { alert(`✅ 成功匯入 ${count} 題！`); document.getElementById('import-textarea').value = ''; toggleImportBox(); }
         }
 
         function getParsedQuizFromUI() {
@@ -513,10 +532,8 @@
         function saveQuizBank() {
             const saveName = document.getElementById('quiz-save-name').value.trim();
             const quizArray = getParsedQuizFromUI();
-            if (!saveName || quizArray.length === 0) { alert("請填寫名稱並新增題目！"); return; }
-            db.ref('SavedQuizzes/' + saveName).set(quizArray).then(() => {
-                alert(`✅ 儲存成功！`); document.getElementById('quiz-save-name').value = ""; loadQuizList(); 
-            });
+            if (!saveName || quizArray.length === 0) return;
+            db.ref('SavedQuizzes/' + saveName).set(quizArray).then(() => { alert(`✅ 儲存成功！`); document.getElementById('quiz-save-name').value = ""; loadQuizList(); });
         }
 
         function loadQuizList() {
@@ -535,31 +552,45 @@
                 const content = snap.val();
                 if(content) {
                     const container = document.getElementById('quiz-ui-container'); container.innerHTML = ''; 
-                    if (typeof content === 'string') {
-                        content.split('\n').forEach(line => { let cols = line.includes('\t') ? line.split('\t') : line.split(','); if(cols.length >= 6) { addQuestionBox(cols[0].trim(), cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim(), parseInt(cols[5].replace(/[^0-9]/g, ''))); } });
-                    } else { content.forEach(q => { addQuestionBox(q.question, q.options[0], q.options[1], q.options[2], q.options[3], q.correctIndex + 1); }); }
+                    if (typeof content === 'string') { content.split('\n').forEach(line => { let cols = line.includes('\t') ? line.split('\t') : line.split(','); if(cols.length >= 6) { addQuestionBox(cols[0].trim(), cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim(), parseInt(cols[5].replace(/[^0-9]/g, ''))); } }); } 
+                    else { content.forEach(q => { addQuestionBox(q.question, q.options[0], q.options[1], q.options[2], q.options[3], q.correctIndex + 1); }); }
                     alert(`☁️ 載入成功！`);
                 }
             });
         }
 
+        // 🌟 教師發布遊戲 (雙模式邏輯)
         function createGame() {
             const pin = document.getElementById('teacher-pin').value.trim();
-            const expectedPlayers = document.getElementById('teacher-expected-players').value || 24;
-            const timeLimit = document.getElementById('teacher-time-limit').value || 60;
+            const type = document.getElementById('teacher-game-type').value;
             const parsedQuiz = getParsedQuizFromUI(); 
-            if(!pin || parsedQuiz.length === 0) return;
+            if(!pin || parsedQuiz.length === 0) { alert("請設定PIN碼並輸入題目！"); return; }
             
             gameRef.child('combatLogs').remove();
 
-            const autoBossHP = Math.max(1000, parseInt(expectedPlayers) * parsedQuiz.length * 40);
-            gameRef.set({ 
-                pinCode: pin, gameType: 'boss_battle', timeLimit: parseInt(timeLimit), 
-                bossTotalHP: autoBossHP, currentBossHP: autoBossHP, bossEnraged: false,
-                classEnergy: 0, ultimateFired: false,
+            let gameData = {
+                pinCode: pin, gameType: type,
                 questions: parsedQuiz, status: 'waiting', players: {}, questionStats: {} 
-            }).then(() => {
-                currentRole = "projector"; document.getElementById('lobby-pin-display').innerText = `👉 PIN：${pin}`;
+            };
+
+            if (type === 'boss_battle') {
+                let expP = parseInt(document.getElementById('teacher-expected-players').value || 24);
+                let timeL = parseInt(document.getElementById('teacher-time-limit').value || 60);
+                let autoBossHP = Math.max(1000, expP * parsedQuiz.length * 40);
+                gameData.timeLimit = timeL;
+                gameData.bossTotalHP = autoBossHP; gameData.currentBossHP = autoBossHP; gameData.bossEnraged = false;
+                gameData.classEnergy = 0; gameData.ultimateFired = false;
+            } else if (type === 'bomb_defusal') {
+                let expP = parseInt(document.getElementById('teacher-bomb-players').value || 24);
+                let bombMins = parseInt(document.getElementById('teacher-bomb-time').value || 5);
+                gameData.bombMinutes = bombMins;
+                gameData.targetWires = expP * parsedQuiz.length; // 目標剪線數
+                gameData.wiresCut = 0;
+            }
+
+            gameRef.set(gameData).then(() => {
+                currentRole = "projector"; currentGameType = type;
+                document.getElementById('lobby-pin-display').innerText = `👉 PIN：${pin}`;
                 const qrContainer = document.getElementById("qrcode"); qrContainer.innerHTML = ""; new QRCode(qrContainer, { text: window.location.href.split('?')[0] + "?pin=" + pin, width: 200, height: 200 });
                 switchScreen('screen-teacher-lobby'); listenToPlayersJoined(); 
             });
@@ -568,19 +599,32 @@
         function listenToPlayersJoined() {
             gameRef.child('players').on('value', snap => {
                 let players = snap.val() || {};
-                document.getElementById('teacher-player-count').innerText = `已加入勇者：${Object.keys(players).length} 人`;
+                document.getElementById('teacher-player-count').innerText = `已加入：${Object.keys(players).length} 人`;
                 document.getElementById('teacher-player-names').innerHTML = Object.values(players).map(p => `<span class="player-tag">${p.name}</span>`).join('');
             });
         }
 
         function startBattle() { 
             silentUnlockAudio(); 
-            gameRef.child('status').set('playing').then(() => { 
-                switchScreen('screen-projector'); 
-                document.getElementById('projector-leaderboard').classList.remove('hidden');
-                updateRPGUI(); 
-                startGameListener(); 
-            }); 
+            
+            if (currentGameType === 'bomb_defusal') {
+                // 拆彈模式設定統一的結束時間戳記
+                gameRef.once('value', snap => {
+                    let d = snap.val();
+                    let endTimeMs = Date.now() + (d.bombMinutes * 60 * 1000);
+                    gameRef.update({ status: 'playing', bombEndTime: endTimeMs }).then(() => {
+                        switchScreen('screen-projector-bomb');
+                        document.getElementById('projector-leaderboard-bomb').classList.remove('hidden');
+                        startGameListener();
+                    });
+                });
+            } else {
+                gameRef.child('status').set('playing').then(() => { 
+                    switchScreen('screen-projector-boss'); 
+                    document.getElementById('projector-leaderboard-boss').classList.remove('hidden');
+                    updateRPGUI(); startGameListener(); 
+                }); 
+            }
         }
 
         window.onload = function() {
@@ -596,18 +640,22 @@
             gameRef.once('value', snap => {
                 const data = snap.val();
                 if (data && data.pinCode === inputPin) {
-                    currentRole = "student"; quizData = data.questions; bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; 
-                    timeLimitSetting = data.timeLimit || 60;
+                    currentRole = "student"; 
+                    currentGameType = data.gameType || 'boss_battle';
+                    quizData = data.questions; 
                     
-                    playerMaxHP = quizData.length * 50; playerHP = playerMaxHP;
-                    playerGold = 0; playerCombo = 0; hasBuffDmg = false; hasBuffShield = false; isTimeFrozen = false;
-                    myTotalDamage = 0; 
+                    playerGold = 0; playerCombo = 0; hasBuffDmg = false; hasBuffShield = false; myTotalDamage = 0; myCorrectCount = 0; myWrongCount = 0;
+                    myPlayerName = playerName; myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
+                    
+                    if(currentGameType === 'boss_battle') {
+                        bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; timeLimitSetting = data.timeLimit || 60;
+                        playerMaxHP = quizData.length * 50; playerHP = playerMaxHP;
+                    } else {
+                        targetWires = data.targetWires; globalWiresCut = 0;
+                    }
 
-                    myPlayerName = playerName; 
-                    myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
                     gameRef.child('players').child(myPlayerId).set({ name: playerName, correct: 0, wrong: 0, damage: 0 });
                     document.getElementById('student-lobby-name').innerText = `嗨，${playerName}！`;
-                    document.getElementById('display-player-name').innerHTML = `${playerName} <span id="ui-level" class="lvl-badge">Lv.1</span>`;
                     switchScreen('screen-student-lobby'); listenToGameStart();
                 } else { alert("PIN碼錯誤或遊戲已開始！"); }
             });
@@ -617,191 +665,223 @@
             gameRef.child('status').on('value', snap => { 
                 let status = snap.val();
                 if (status === 'playing' && currentRole === 'student') { 
-                    currentQuestionIndex = 0; switchScreen('screen-game'); updateRPGUI(); startGameListener(); loadQuestion(); 
+                    currentQuestionIndex = 0; 
+                    switchScreen('screen-game'); 
+                    
+                    // 🌟 學生端 UI 切換
+                    if (currentGameType === 'bomb_defusal') {
+                        document.getElementById('ui-boss-zone').classList.add('hidden');
+                        document.getElementById('ui-bomb-zone').classList.remove('hidden');
+                        document.getElementById('shop-boss').classList.add('hidden');
+                        document.getElementById('shop-bomb').classList.remove('hidden');
+                        document.getElementById('hp-exp-zone').classList.add('hidden'); // 拆彈隱藏血量經驗
+                        document.getElementById('timer-display').classList.add('hidden'); // 隱藏單題倒數
+                        document.getElementById('display-player-name-bomb').innerText = `特務 ${myPlayerName}`;
+                    } else {
+                        document.getElementById('display-player-name-boss').innerHTML = `${myPlayerName} <span id="ui-level" class="lvl-badge">Lv.1</span>`;
+                    }
+                    
+                    updateRPGUI(); startGameListener(); loadQuestion(); 
                 }
-                if (status === 'finished' && currentRole === 'student') { clearInterval(timerInterval); generateStudentSummary(); }
+                
+                // 結束判斷
+                if ((status === 'finished' || status === 'exploded' || status === 'defused') && currentRole === 'student') { 
+                    clearInterval(timerInterval); 
+                    if(status === 'exploded') document.getElementById('summary-title-student').innerText = "💥 任務失敗，炸彈爆炸了！";
+                    if(status === 'defused') document.getElementById('summary-title-student').innerText = "🎉 任務成功！炸彈已拆除！";
+                    generateStudentSummary(); 
+                }
             });
         }
 
+        // 🌟 雙模式商城邏輯
         function buyItem(type, cost) {
             if (playerGold < cost) return;
             playerGold -= cost;
-            let sfxBuy = document.getElementById('sfx-buy');
-            if(sfxBuy) { sfxBuy.currentTime = 0; sfxBuy.play().catch(()=>{}); }
+            let sfxBuy = document.getElementById('sfx-buy'); if(sfxBuy) { sfxBuy.currentTime = 0; sfxBuy.play().catch(()=>{}); }
 
-            if(type === 'dmg') { 
-                hasBuffDmg = true; 
-            } else if (type === 'shield') {
-                hasBuffShield = true;
-            } else if (type === 'time') {
-                isTimeFrozen = true;
-                const timerDisplay = document.getElementById('timer-display');
-                timerDisplay.style.backgroundColor = '#e3f2fd'; timerDisplay.style.borderColor = '#2196f3'; timerDisplay.style.color = '#1565C0';
-                timerDisplay.innerText = `⏱️ 時間凍結中...`;
-                gameRef.child('combatLogs').push({ name: myPlayerName, type: 'time', timestamp: Date.now() });
-
-                setTimeout(() => {
-                    isTimeFrozen = false;
-                    timerDisplay.style.backgroundColor = '#ffebee'; timerDisplay.style.borderColor = '#e21b3c'; timerDisplay.style.color = '#e21b3c';
-                    timerDisplay.innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
-                }, 10000);
+            if(type === 'dmg') { hasBuffDmg = true; } 
+            else if (type === 'shield' || type === 'bombshield') { hasBuffShield = true; } 
+            else if (type === 'timeadd') {
+                // 幫全班炸彈加10秒
+                gameRef.child('bombEndTime').transaction(t => t + 10000);
+                gameRef.child('combatLogs').push({ name: myPlayerName, type: 'timeadd', timestamp: Date.now() });
+                alert("🕒 奉獻時間精華！全班倒數時間增加 10 秒！");
+            } 
+            else if (type === 'skip') {
+                // 秒殺此題
+                alert("✂️ 使用萬能剪刀！直接剪斷此線！");
+                gameRef.child('combatLogs').push({ name: myPlayerName, type: 'skip', timestamp: Date.now() });
+                checkAnswer(quizData[currentQuestionIndex].correctIndex); // 強制送出正確答案
+                return; // checkAnswer 會呼叫 updateRPGUI
             }
             updateRPGUI();
         }
 
-        function showProjectorLog(msg, color) {
-            const container = document.getElementById('projector-log-container');
-            const toast = document.createElement('div');
-            toast.className = 'log-toast';
-            toast.style.borderColor = color;
-            toast.style.color = color;
-            toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => { if(toast.parentElement) toast.parentElement.removeChild(toast); }, 4000);
+        function showProjectorLog(msg, color, mode) {
+            const containerId = mode === 'bomb' ? 'projector-log-container-bomb' : 'projector-log-container-boss';
+            const container = document.getElementById(containerId);
+            const toast = document.createElement('div'); toast.className = 'log-toast'; toast.style.borderColor = color; toast.style.color = color; toast.innerText = msg;
+            container.appendChild(toast); setTimeout(() => { if(toast.parentElement) toast.parentElement.removeChild(toast); }, 4000);
         }
 
-        function fireUltimate() {
-            document.getElementById('btn-ultimate').classList.add('hidden'); 
-            gameRef.child('ultimateFired').set(true);
-        }
+        function fireUltimate() { document.getElementById('btn-ultimate').classList.add('hidden'); gameRef.child('ultimateFired').set(true); }
 
         function updateRPGUI() {
-            let bossPercent = Math.max(0, (bossHP / bossTotalHP) * 100);
-            if (bossPercent <= 50 && !isBossEnraged && bossHP > 0) {
-                isBossEnraged = true;
-                if(currentRole === "projector") { document.getElementById('proj-rage-warning').classList.remove('hidden'); document.getElementById('projector-boss-img').classList.add('boss-enraged'); } 
-                else if(currentRole === "student") { document.getElementById('student-rage-warning').classList.remove('hidden'); document.getElementById('student-boss-img').classList.add('boss-enraged'); }
+            if (currentGameType === 'boss_battle') {
+                let bossPercent = Math.max(0, (bossHP / bossTotalHP) * 100);
+                if (bossPercent <= 50 && !isBossEnraged && bossHP > 0) {
+                    isBossEnraged = true;
+                    if(currentRole === "projector") { document.getElementById('proj-rage-warning').classList.remove('hidden'); document.getElementById('projector-boss-img').classList.add('boss-enraged'); } 
+                    else if(currentRole === "student") { document.getElementById('student-rage-warning').classList.remove('hidden'); document.getElementById('student-boss-img').classList.add('boss-enraged'); }
+                }
+                if (currentRole === "projector") { 
+                    document.getElementById('projector-boss-hp-fill').style.width = bossPercent + '%'; document.getElementById('projector-boss-hp-text').innerText = `👿 魔王：${bossHP}`; 
+                } else if (currentRole === "student") { 
+                    document.getElementById('student-boss-hp-fill').style.width = bossPercent + '%'; document.getElementById('student-boss-hp-text').innerText = `👿 魔王：${bossHP}`;
+                    let pPercent = Math.max(0, (playerHP / playerMaxHP) * 100);
+                    document.getElementById('player-hp-fill').style.width = pPercent + '%'; document.getElementById('player-hp-text').innerText = `🛡️ 你的血量：${playerHP}`;
+                    let expNeeded = playerLevel * 30; let expPercent = (playerExp / expNeeded) * 100;
+                    document.getElementById('ui-level').innerText = `Lv.${playerLevel}`; document.getElementById('ui-exp-text').innerText = `🌟 EXP: ${playerExp} / ${expNeeded}`; document.getElementById('ui-exp-fill').style.width = expPercent + '%';
+                    
+                    document.getElementById('btn-shop-dmg').disabled = (playerGold < 30 || hasBuffDmg);
+                    document.getElementById('btn-shop-shield').disabled = (playerGold < 40 || hasBuffShield);
+                }
+            } else {
+                // Bomb Mode UI Update
+                if (currentRole === 'student') {
+                    document.getElementById('student-bomb-progress-text').innerText = `✂️ 個人進度: ${myCorrectCount} / ${quizData.length}`;
+                    document.getElementById('btn-shop-timeadd').disabled = (playerGold < 30);
+                    document.getElementById('btn-shop-bombshield').disabled = (playerGold < 40 || hasBuffShield);
+                    document.getElementById('btn-shop-skip').disabled = (playerGold < 60);
+                } else if (currentRole === 'projector') {
+                    let wPercent = Math.min(100, (globalWiresCut / targetWires) * 100);
+                    document.getElementById('proj-wire-fill').style.width = wPercent + '%';
+                    document.getElementById('proj-wire-text').innerText = `✂️ 全班拆除進度 (${globalWiresCut} / ${targetWires})`;
+                }
             }
-            if (currentRole === "projector") { 
-                document.getElementById('projector-boss-hp-fill').style.width = bossPercent + '%'; 
-                document.getElementById('projector-boss-hp-text').innerText = `👿 魔王：${bossHP}`; 
-            }
-            else if (currentRole === "student") { 
-                document.getElementById('student-boss-hp-fill').style.width = bossPercent + '%'; 
-                document.getElementById('student-boss-hp-text').innerText = `👿 魔王：${bossHP}`;
-                let pPercent = Math.max(0, (playerHP / playerMaxHP) * 100);
-                document.getElementById('player-hp-fill').style.width = pPercent + '%';
-                document.getElementById('player-hp-text').innerText = `🛡️ 你的血量：${playerHP}`;
-                let expNeeded = playerLevel * 30; 
-                let expPercent = (playerExp / expNeeded) * 100;
-                document.getElementById('ui-level').innerText = `Lv.${playerLevel}`;
-                document.getElementById('ui-exp-text').innerText = `🌟 EXP: ${playerExp} / ${expNeeded}`;
-                document.getElementById('ui-exp-fill').style.width = expPercent + '%';
 
-                let btnPotion = document.getElementById('btn-potion');
-                btnPotion.innerText = `🎒 喝生命藥水 (擁有: ${playerPotions}瓶)`;
-                btnPotion.disabled = !(playerPotions > 0 && playerHP < playerMaxHP);
-                btnPotion.style.opacity = btnPotion.disabled ? "0.5" : "1";
-
+            // 共用狀態更新
+            if (currentRole === 'student') {
                 document.getElementById('ui-gold-text').innerText = `💰 金幣: ${playerGold} G`;
                 let comboDisplay = document.getElementById('ui-combo-text');
                 if(playerCombo >= 3) { comboDisplay.innerText = `🔥 ${playerCombo} 連擊!`; comboDisplay.classList.remove('hidden'); } else { comboDisplay.classList.add('hidden'); }
 
-                document.getElementById('btn-shop-dmg').disabled = (playerGold < 30 || hasBuffDmg);
-                document.getElementById('btn-shop-shield').disabled = (playerGold < 40 || hasBuffShield);
-                document.getElementById('btn-shop-time').disabled = (playerGold < 50 || isTimeFrozen);
-
                 let buffHtml = "";
                 if(hasBuffDmg) buffHtml += `<div class="buff-badge">⚔️ 傷害 X 3</div>`;
                 if(hasBuffShield) buffHtml += `<div class="buff-badge" style="border-color:#4CAF50; color:#2e7d32;">🛡️ 護盾啟動</div>`;
-                if(isTimeFrozen) buffHtml += `<div class="buff-badge" style="border-color:#9C27B0; color:#6A1B9A;">⏱️ 凍結中</div>`;
                 document.getElementById('ui-buff-container').innerHTML = buffHtml;
             }
         }
 
-        function usePotion() {
-            if (playerPotions > 0 && playerHP < playerMaxHP) {
-                playerPotions--; playerHP = Math.min(playerMaxHP, playerHP + 30); updateRPGUI();
-                let sfx = document.getElementById('sfx-heal'); if(sfx) { sfx.currentTime = 0; sfx.play().catch(()=>{}); }
-                document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
-            }
-        }
-
-        function triggerUltimateHitEffect() {
-            const sfx = document.getElementById('sfx-attack'); if(sfx) { sfx.currentTime = 0; sfx.play().catch(() => {}); }
-            const containerId = currentRole === "projector" ? 'projector-hit-container' : 'student-hit-container';
-            const container = document.getElementById(containerId);
-            if(container) { container.classList.remove('ultimate-hit'); void container.offsetWidth; container.classList.add('ultimate-hit'); }
-        }
-
+        // 🌟 雙模式全域監聽器
         function startGameListener() {
-            gameRef.child('currentBossHP').on('value', snap => {
-                let newHP = snap.val();
-                if (newHP !== null && newHP < bossHP) triggerUltimateHitEffect();
-                if (newHP !== null) { bossHP = newHP; if (bossHP < 0) bossHP = 0; }
-                updateRPGUI();
-            });
+            if (currentGameType === 'boss_battle') {
+                gameRef.child('currentBossHP').on('value', snap => {
+                    let newHP = snap.val();
+                    if (newHP !== null && newHP < bossHP) triggerUltimateHitEffect();
+                    if (newHP !== null) { bossHP = newHP; if (bossHP < 0) bossHP = 0; }
+                    updateRPGUI();
+                });
+                if (currentRole === 'projector') {
+                    gameRef.child('classEnergy').on('value', snap => {
+                        let energy = snap.val() || 0;
+                        document.getElementById('proj-energy-fill').style.width = energy + '%'; document.getElementById('proj-energy-text').innerText = energy + '%';
+                        if(energy >= 100 && bossHP > 0) document.getElementById('btn-ultimate').classList.remove('hidden'); else document.getElementById('btn-ultimate').classList.add('hidden');
+                    });
+                    gameRef.child('ultimateFired').on('value', snap => {
+                        if(snap.val() === true) {
+                            document.body.classList.add('flash-gold'); setTimeout(() => document.body.classList.remove('flash-gold'), 1000);
+                            const sfxUlt = document.getElementById('sfx-ultimate'); if(sfxUlt) { sfxUlt.currentTime = 0; sfxUlt.play().catch(()=>{}); }
+                            showProjectorLog("☄️ 全班大絕招發動！", "#FFD700", 'boss');
+                            let dmg = Math.floor(bossTotalHP * 0.15); let newHP = Math.max(0, bossHP - dmg);
+                            gameRef.child('currentBossHP').set(newHP); gameRef.child('classEnergy').set(0); gameRef.child('ultimateFired').set(false); 
+                        }
+                    });
+                }
+            } else if (currentGameType === 'bomb_defusal') {
+                // 拆彈模式專屬監聽
+                gameRef.child('bombEndTime').on('value', snap => { bombEndTime = snap.val(); });
+                gameRef.child('wiresCut').on('value', snap => { globalWiresCut = snap.val() || 0; updateRPGUI(); });
+                
+                // 大螢幕倒數計時器
+                if (currentRole === 'projector') {
+                    timerInterval = setInterval(() => {
+                        gameRef.child('status').once('value', sSnap => {
+                            if(sSnap.val() !== 'playing') return;
+                            let msLeft = bombEndTime - Date.now();
+                            if (msLeft <= 0) {
+                                document.getElementById('proj-bomb-timer').innerText = "00:00.0";
+                                gameRef.child('status').set('exploded').then(() => { triggerBombEnd('exploded'); });
+                                clearInterval(timerInterval);
+                            } else {
+                                let mins = Math.floor(msLeft / 60000); let secs = Math.floor((msLeft % 60000) / 1000); let dec = Math.floor((msLeft % 1000) / 100);
+                                document.getElementById('proj-bomb-timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${dec}`;
+                                // 快爆炸時閃爍
+                                if (msLeft < 30000) document.getElementById('proj-bomb-timer').style.color = '#ff0000';
+                            }
+                            
+                            // 判斷勝利
+                            if (globalWiresCut >= targetWires) {
+                                gameRef.child('status').set('defused').then(() => { triggerBombEnd('defused'); });
+                                clearInterval(timerInterval);
+                            }
+                        });
+                    }, 100);
+                }
+            }
 
+            // 共用：大螢幕廣播與排行榜
             if (currentRole === 'projector') {
-                gameRef.child('classEnergy').on('value', snap => {
-                    let energy = snap.val() || 0;
-                    document.getElementById('proj-energy-fill').style.width = energy + '%';
-                    document.getElementById('proj-energy-text').innerText = energy + '%';
-                    if(energy >= 100 && bossHP > 0) { document.getElementById('btn-ultimate').classList.remove('hidden'); } 
-                    else { document.getElementById('btn-ultimate').classList.add('hidden'); }
-                });
-
-                gameRef.child('ultimateFired').on('value', snap => {
-                    if(snap.val() === true) {
-                        document.body.classList.add('flash-gold');
-                        setTimeout(() => document.body.classList.remove('flash-gold'), 1000);
-                        const sfxUlt = document.getElementById('sfx-ultimate'); if(sfxUlt) { sfxUlt.currentTime = 0; sfxUlt.play().catch(()=>{}); }
-                        showProjectorLog("☄️ 全班集氣大絕招發動！造成毀滅性傷害！", "#FFD700");
-                        
-                        let dmg = Math.floor(bossTotalHP * 0.15); 
-                        let newHP = Math.max(0, bossHP - dmg);
-                        gameRef.child('currentBossHP').set(newHP);
-                        gameRef.child('classEnergy').set(0); gameRef.child('ultimateFired').set(false); 
-                    }
-                });
-
+                let modePrefix = currentGameType === 'boss_battle' ? 'boss' : 'bomb';
                 gameRef.child('combatLogs').on('child_added', snap => {
-                    let log = snap.val();
-                    if (!log || Date.now() - log.timestamp > 10000) return; 
+                    let log = snap.val(); if (!log || Date.now() - log.timestamp > 10000) return; 
                     let msg = ""; let color = "";
                     if (log.type === 'critical') { msg = `💥 ${log.name} 發動了 會心一擊！`; color = "#FFD54F"; }
                     if (log.type === 'shield') { msg = `🛡️ ${log.name} 觸發了 絕對防禦！`; color = "#81C784"; }
-                    if (log.type === 'time') { msg = `⏱️ ${log.name} 施放了 時間暫停！`; color = "#4DD0E1"; }
-                    if (msg) showProjectorLog(msg, color);
+                    if (log.type === 'timeadd') { msg = `🕒 ${log.name} 奉獻時間！全班 +10秒！`; color = "#4DD0E1"; }
+                    if (log.type === 'skip') { msg = `✂️ ${log.name} 使用萬能剪刀秒殺一題！`; color = "#FF9800"; }
+                    if (msg) showProjectorLog(msg, color, modePrefix);
                 });
 
                 gameRef.child('players').on('value', snap => {
                     let players = snap.val() || {};
-                    let sortedPlayers = Object.values(players).sort((a, b) => (b.damage || 0) - (a.damage || 0));
                     let lbHtml = "";
-                    sortedPlayers.slice(0, 5).forEach((p, i) => {
-                        if((p.damage || 0) > 0) {
-                            let rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
-                            lbHtml += `<div class="lb-item"><span>${rankIcon} ${p.name}</span> <span>${p.damage}</span></div>`;
-                        }
-                    });
-                    document.getElementById('lb-list').innerHTML = lbHtml || '等待勇者攻擊...';
+                    if (currentGameType === 'boss_battle') {
+                        let sorted = Object.values(players).sort((a, b) => (b.damage || 0) - (a.damage || 0));
+                        sorted.slice(0, 5).forEach((p, i) => { if((p.damage||0)>0) lbHtml += `<div class="lb-item"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${p.name}</span> <span>${p.damage}</span></div>`; });
+                    } else {
+                        let sorted = Object.values(players).sort((a, b) => (b.correct || 0) - (a.correct || 0));
+                        sorted.slice(0, 5).forEach((p, i) => { if((p.correct||0)>0) lbHtml += `<div class="lb-item"><span>${['🥇','🥈','🥉'][i]||(i+1)+'.'} ${p.name}</span> <span>${p.correct} 條</span></div>`; });
+                    }
+                    document.getElementById(`lb-list-${modePrefix}`).innerHTML = lbHtml || '等待中...';
                 });
             }
         }
 
         function triggerGameEnd() { gameRef.child('status').set('finished').then(() => { generateTeacherSummary(); }); }
+        function triggerBombEnd(result) {
+            let title = result === 'exploded' ? "💥 任務失敗！炸彈爆炸！" : "🎉 任務成功！完美拆除！";
+            document.getElementById('summary-title-teacher').innerText = title;
+            generateTeacherSummary();
+        }
 
         function startTimer() {
-            clearInterval(timerInterval);
-            timeLeft = timeLimitSetting;
-            document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
+            if (currentGameType === 'bomb_defusal') return; // 拆彈模式學生端沒有單題倒數
+            clearInterval(timerInterval); timeLeft = timeLimitSetting; document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
             timerInterval = setInterval(() => {
-                if (isTimeFrozen) return; 
-                timeLeft--;
-                document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
+                timeLeft--; document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
                 if (timeLeft <= 0) { clearInterval(timerInterval); handleWrongAnswer(); }
             }, 1000);
         }
 
         function loadQuestion() {
             if (currentQuestionIndex >= quizData.length) { 
-                clearInterval(timerInterval); 
-                document.getElementById('question-text').innerText = "作答完畢！請看大螢幕等待結算...";
+                if (currentGameType === 'boss_battle') { clearInterval(timerInterval); }
+                document.getElementById('question-text').innerText = "作答完畢！請等待結算...";
                 document.getElementById('options-box').classList.add('hidden');
                 return; 
             }
-            
             const q = quizData[currentQuestionIndex];
             document.getElementById('question-text').innerText = q.question;
             for(let i=0; i<4; i++) document.getElementById('btn-' + i).innerText = q.options[i];
@@ -809,72 +889,60 @@
         }
 
         function handleWrongAnswer() {
-            playerCombo = 0;
-            const sfxHurt = document.getElementById('sfx-hurt'); const sfxWrong = document.getElementById('sfx-wrong');
+            playerCombo = 0; const sfxHurt = document.getElementById('sfx-hurt'); const sfxWrong = document.getElementById('sfx-wrong');
             if(sfxWrong) { sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {}); }
+            document.body.classList.add('flash-red'); setTimeout(() => document.body.classList.remove('flash-red'), 300);
             
             if (hasBuffShield) {
-                hasBuffShield = false; 
-                alert("🛡️ 絕對防禦發動！抵擋了這次錯誤懲罰！");
+                hasBuffShield = false; alert("🛡️ 防禦發動！抵擋了錯誤懲罰！");
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'shield', timestamp: Date.now() });
-                updateRPGUI();
             } else {
                 if(sfxHurt) { setTimeout(() => { sfxHurt.currentTime = 0; sfxHurt.play().catch(() => {}); }, 150); }
-                let dmgTaken = isBossEnraged ? 50 : 25;
-                playerHP -= dmgTaken; 
-                if (playerHP < 0) playerHP = 0; 
-                updateRPGUI();
-                document.body.classList.add('flash-red'); setTimeout(() => document.body.classList.remove('flash-red'), 300);
+                if (currentGameType === 'boss_battle') {
+                    let dmgTaken = isBossEnraged ? 50 : 25; playerHP = Math.max(0, playerHP - dmgTaken); 
+                } else {
+                    // 拆彈模式：扣全班時間 5 秒
+                    gameRef.child('bombEndTime').transaction(t => t - 5000);
+                    // 顯示個人警告
+                    let warning = document.createElement('div');
+                    warning.innerText = "❌ 剪錯線！全班時間 -5 秒！";
+                    warning.style.cssText = "position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:red; color:white; padding:20px; font-size:30px; border-radius:10px; z-index:999;";
+                    document.body.appendChild(warning); setTimeout(()=>warning.remove(), 1500);
+                }
             }
             
-            myWrongCount++;
+            updateRPGUI(); myWrongCount++;
             gameRef.child('players').child(myPlayerId).update({ wrong: myWrongCount });
             gameRef.child('questionStats').child(currentQuestionIndex).child('wrong').transaction(curr => (curr || 0) + 1);
             currentQuestionIndex++; setTimeout(loadQuestion, 500);
         }
 
         function checkAnswer(idx) {
-            clearInterval(timerInterval);
+            if(currentGameType === 'boss_battle') clearInterval(timerInterval);
+            
             if (idx === quizData[currentQuestionIndex].correctIndex) {
-                playerCombo++;
-                let earnedGold = 10;
-                if (playerCombo >= 3) { earnedGold += 5; } 
-                playerGold += earnedGold;
+                playerCombo++; let earnedGold = 10; if (playerCombo >= 3) { earnedGold += 5; } playerGold += earnedGold;
 
-                gameRef.child('classEnergy').transaction(curr => Math.min(100, (curr || 0) + 2));
-
-                let baseDmg = 40;
-                let finalDmg = baseDmg + ((playerLevel - 1) * 10); 
-                
-                if (hasBuffDmg) {
-                    finalDmg *= 3; 
-                    hasBuffDmg = false; 
-                    gameRef.child('combatLogs').push({ name: myPlayerName, type: 'critical', timestamp: Date.now() });
-                    setTimeout(() => alert("💥 會心一擊發動！造成 3 倍巨量傷害！"), 100);
+                if (currentGameType === 'boss_battle') {
+                    gameRef.child('classEnergy').transaction(curr => Math.min(100, (curr || 0) + 2));
+                    let finalDmg = 40 + ((playerLevel - 1) * 10); 
+                    if (hasBuffDmg) { finalDmg *= 3; hasBuffDmg = false; gameRef.child('combatLogs').push({ name: myPlayerName, type: 'critical', timestamp: Date.now() }); setTimeout(() => alert("💥 會心一擊！"), 100); }
+                    gameRef.child('currentBossHP').set(Math.max(0, bossHP - finalDmg));
+                    myTotalDamage += finalDmg;
+                    
+                    playerExp += 10; let expNeeded = playerLevel * 30;
+                    if (playerExp >= expNeeded) { playerLevel++; playerExp -= expNeeded; let sfxLvl = document.getElementById('sfx-levelup'); if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); } document.body.classList.add('flash-gold'); setTimeout(() => document.body.classList.remove('flash-gold'), 500); }
+                } else {
+                    // 拆彈模式：全班時間 +3 秒，進度 +1
+                    gameRef.child('bombEndTime').transaction(t => t + 3000);
+                    gameRef.child('wiresCut').transaction(w => (w || 0) + 1);
+                    document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
                 }
 
-                let newHP = Math.max(0, bossHP - finalDmg);
-                gameRef.child('currentBossHP').set(newHP);
-                
-                myTotalDamage += finalDmg;
-                
-                playerExp += 10;
-                let expNeeded = playerLevel * 30;
-                if (playerExp >= expNeeded) {
-                    playerLevel++; playerExp -= expNeeded; 
-                    let sfxLvl = document.getElementById('sfx-levelup');
-                    if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); }
-                    document.body.classList.add('flash-gold');
-                    setTimeout(() => document.body.classList.remove('flash-gold'), 500);
-                }
-
-                if (Math.random() <= 0.3) { playerPotions++; setTimeout(() => alert("🎁 恭喜！魔王掉落了一瓶【生命藥水】！"), 100); }
-
-                updateRPGUI(); 
-                myCorrectCount++;
+                updateRPGUI(); myCorrectCount++;
                 gameRef.child('players').child(myPlayerId).update({ correct: myCorrectCount, damage: myTotalDamage });
                 gameRef.child('questionStats').child(currentQuestionIndex).child('correct').transaction(curr => (curr || 0) + 1);
-                currentQuestionIndex++; setTimeout(loadQuestion, 500);
+                currentQuestionIndex++; setTimeout(loadQuestion, 300); // 拆彈模式節奏更快
             } else { handleWrongAnswer(); }
         }
 
@@ -885,8 +953,7 @@
 
         function exportToCSV() {
             gameRef.once('value', snap => {
-                const data = snap.val();
-                if(!data || !data.players) return;
+                const data = snap.val(); if(!data || !data.players) return;
                 let csvContent = "\uFEFF學生姓名,答對題數,答錯題數,獲得經驗值,總輸出傷害\n";
                 Object.values(data.players).forEach(p => {
                     let correct = p.correct || 0; let wrong = p.wrong || 0; let exp = correct * 10; let dmg = p.damage || 0;
@@ -900,7 +967,8 @@
         }
 
         function generateTeacherSummary() {
-            switchScreen('screen-summary-teacher');
+            document.querySelectorAll('.screen-page').forEach(page => page.classList.add('hidden'));
+            document.getElementById('screen-summary-teacher').classList.remove('hidden');
             gameRef.once('value', snap => {
                 const data = snap.val(); if(!data) return;
                 let players = Object.values(data.players || {});
@@ -925,7 +993,8 @@
         }
 
         function generateStudentSummary() {
-            switchScreen('screen-summary-student');
+            document.querySelectorAll('.screen-page').forEach(page => page.classList.add('hidden'));
+            document.getElementById('screen-summary-student').classList.remove('hidden');
             document.getElementById('my-final-score').innerText = `你的戰績：✅ 答對 ${myCorrectCount} 題 ｜ ❌ 答錯 ${myWrongCount} 題`;
             gameRef.once('value', snap => {
                 const data = snap.val(); if(data && data.players) {
