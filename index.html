@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>勇者學園對戰平台 6.0 (魔法商城版)</title>
+    <title>勇者學園對戰平台 6.1 (魔法廣播版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -17,6 +17,7 @@
             background-image: url('https://img.freepik.com/free-vector/pixel-art-mystical-background_52683-87349.jpg');
             background-size: cover; background-position: center; background-attachment: fixed;
             transition: background-color 0.3s;
+            overflow-x: hidden;
         }
         
         .card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 90%; max-width: 600px; margin: 20px auto; border: 2px solid rgba(255,255,255,0.8);}
@@ -119,7 +120,7 @@
         .del-btn { background: #e21b3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;}
         .import-box { background: #fff3e0; padding: 15px; border-radius: 8px; border: 2px dashed #FF9800; margin-bottom: 15px; text-align: left; }
 
-        /* 🌟 商城與金幣系統 UI */
+        /* 商城與金幣系統 UI */
         .gold-text { color: #f57f17; font-weight: bold; font-size: 20px; }
         .combo-text { color: #e64a19; font-weight: bold; font-size: 18px; margin-left: 15px; animation: pulse 1s infinite; }
         .shop-container { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; padding-bottom: 5px;}
@@ -128,7 +129,12 @@
         .shop-item:disabled { opacity: 0.5; cursor: not-allowed; border-color: #ccc; filter: grayscale(100%);}
         .buff-container { display: flex; gap: 10px; justify-content: center; margin-top: 10px; min-height: 35px;}
         .buff-badge { background: #e3f2fd; color: #1565C0; padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; border: 2px solid #2196f3; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 5px;}
+        
+        /* 🌟 廣播彈幕 UI */
+        .log-toast { background: rgba(0, 0, 0, 0.85); border-left: 8px solid; color: white; padding: 12px 20px; margin-bottom: 10px; border-radius: 5px; font-size: 20px; font-weight: bold; text-shadow: 1px 1px 2px black; box-shadow: 0 4px 10px rgba(0,0,0,0.5); animation: slide-in 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), fade-out 0.5s ease-in 3.5s forwards;}
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fade-out { to { opacity: 0; transform: translateY(-20px); } }
     </style>
 </head>
 <body>
@@ -164,7 +170,7 @@
 
         <div style="display: flex; gap: 10px; width: 100%;">
             <input type="number" id="teacher-expected-players" placeholder="預計全班人數 (自動計算難度)" value="24" style="flex: 1; border: 2px solid #2196F3; background: #e3f2fd;">
-            <input type="number" id="teacher-time-limit" placeholder="每題秒數" value="50" style="flex: 1;">
+            <input type="number" id="teacher-time-limit" placeholder="每題秒數" value="90" style="flex: 1;">
         </div>
         <p style="text-align: left; margin: 0 0 10px 5px; font-size: 14px; color: #1565C0; font-weight: bold;">💡 系統會根據「全班人數」與「總題數」自動為您計算最完美的魔王血量！</p>
         
@@ -225,7 +231,9 @@
         <p style="color: #666; font-weight: bold;">請抬頭看黑板大螢幕確認名字！</p>
     </div>
 
-    <div id="screen-projector" class="screen-page card hidden" style="max-width: 800px; background: rgba(0,0,0,0.8); color: white; border: none;">
+    <div id="screen-projector" class="screen-page card hidden" style="max-width: 800px; background: rgba(0,0,0,0.8); color: white; border: none; position: relative;">
+        <div id="projector-log-container" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
+
         <h1 style="color: #ffcc00; text-shadow: 0 0 10px #ffcc00;">🔥 全班集火攻擊中 🔥</h1>
         <h2 id="proj-rage-warning" class="hidden" style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff; animation: pulse 1s infinite;">⚠️ 魔王進入狂暴狀態！傷害加倍！⚠️</h2>
         <div id="projector-hit-container" style="display:inline-block; padding:10px;">
@@ -338,7 +346,6 @@
         let playerExp = 0;
         let playerPotions = 0;
         
-        // 🌟 新增：玩家經濟與狀態變數
         let playerGold = 0;
         let playerCombo = 0;
         let hasBuffDmg = false;
@@ -355,6 +362,7 @@
         let timerInterval;
 
         let myPlayerId = ""; 
+        let myPlayerName = ""; // 🌟 儲存本機玩家名稱
         let myCorrectCount = 0;
         let myWrongCount = 0;
 
@@ -481,6 +489,10 @@
             const timeLimit = document.getElementById('teacher-time-limit').value;
             const parsedQuiz = getParsedQuizFromUI(); 
             if(!pin || parsedQuiz.length === 0) return;
+            
+            // 清除舊的戰況紀錄
+            gameRef.child('combatLogs').remove();
+
             const autoBossHP = Math.max(1000, parseInt(expectedPlayers) * parsedQuiz.length * 40);
             gameRef.set({ 
                 pinCode: pin, gameType: 'boss_battle', timeLimit: parseInt(timeLimit), 
@@ -518,10 +530,10 @@
                 if (data && data.pinCode === inputPin) {
                     currentRole = "student"; quizData = data.questions; bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; timeLimitSetting = data.timeLimit || 50;
                     
-                    // 🌟 重置學生狀態
                     playerMaxHP = quizData.length * 50; playerHP = playerMaxHP;
                     playerGold = 0; playerCombo = 0; hasBuffDmg = false; hasBuffShield = false; isTimeFrozen = false;
 
+                    myPlayerName = playerName; // 紀錄名稱供廣播用
                     myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
                     gameRef.child('players').child(myPlayerId).set({ name: playerName, correct: 0, wrong: 0 });
                     document.getElementById('student-lobby-name').innerText = `嗨，${playerName}！`;
@@ -541,7 +553,7 @@
             });
         }
 
-        // 🌟 新增：購買道具的邏輯
+        // 🌟 學生購買道具並推播事件給大螢幕
         function buyItem(type, cost) {
             if (playerGold < cost) return;
             playerGold -= cost;
@@ -556,21 +568,31 @@
             } else if (type === 'time') {
                 isTimeFrozen = true;
                 const timerDisplay = document.getElementById('timer-display');
-                timerDisplay.style.backgroundColor = '#e3f2fd';
-                timerDisplay.style.borderColor = '#2196f3';
-                timerDisplay.style.color = '#1565C0';
+                timerDisplay.style.backgroundColor = '#e3f2fd'; timerDisplay.style.borderColor = '#2196f3'; timerDisplay.style.color = '#1565C0';
                 timerDisplay.innerText = `⏱️ 時間凍結中...`;
                 
-                // 10秒後解除凍結
+                // 傳送廣播事件
+                gameRef.child('combatLogs').push({ name: myPlayerName, type: 'time', timestamp: Date.now() });
+
                 setTimeout(() => {
                     isTimeFrozen = false;
-                    timerDisplay.style.backgroundColor = '#ffebee';
-                    timerDisplay.style.borderColor = '#e21b3c';
-                    timerDisplay.style.color = '#e21b3c';
+                    timerDisplay.style.backgroundColor = '#ffebee'; timerDisplay.style.borderColor = '#e21b3c'; timerDisplay.style.color = '#e21b3c';
                     timerDisplay.innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
                 }, 10000);
             }
             updateRPGUI();
+        }
+
+        // 🌟 大螢幕專用的彈幕顯示函數
+        function showProjectorLog(msg, color) {
+            const container = document.getElementById('projector-log-container');
+            const toast = document.createElement('div');
+            toast.className = 'log-toast';
+            toast.style.borderColor = color;
+            toast.style.color = color;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => { if(toast.parentElement) toast.parentElement.removeChild(toast); }, 4000);
         }
 
         function updateRPGUI() {
@@ -601,22 +623,14 @@
                 btnPotion.disabled = !(playerPotions > 0 && playerHP < playerMaxHP);
                 btnPotion.style.opacity = btnPotion.disabled ? "0.5" : "1";
 
-                // 🌟 更新金幣與連擊 UI
                 document.getElementById('ui-gold-text').innerText = `💰 金幣: ${playerGold} G`;
                 let comboDisplay = document.getElementById('ui-combo-text');
-                if(playerCombo >= 3) {
-                    comboDisplay.innerText = `🔥 ${playerCombo} 連擊!`;
-                    comboDisplay.classList.remove('hidden');
-                } else {
-                    comboDisplay.classList.add('hidden');
-                }
+                if(playerCombo >= 3) { comboDisplay.innerText = `🔥 ${playerCombo} 連擊!`; comboDisplay.classList.remove('hidden'); } else { comboDisplay.classList.add('hidden'); }
 
-                // 🌟 更新商城按鈕狀態 (錢不夠就反灰)
                 document.getElementById('btn-shop-dmg').disabled = (playerGold < 30 || hasBuffDmg);
                 document.getElementById('btn-shop-shield').disabled = (playerGold < 40 || hasBuffShield);
                 document.getElementById('btn-shop-time').disabled = (playerGold < 50 || isTimeFrozen);
 
-                // 🌟 更新目前擁有的 Buff 標籤
                 let buffHtml = "";
                 if(hasBuffDmg) buffHtml += `<div class="buff-badge">⚔️ 傷害 X 3</div>`;
                 if(hasBuffShield) buffHtml += `<div class="buff-badge" style="border-color:#4CAF50; color:#2e7d32;">🛡️ 護盾啟動</div>`;
@@ -647,6 +661,21 @@
                 if (newHP !== null) { bossHP = newHP; if (bossHP < 0) bossHP = 0; }
                 updateRPGUI();
             });
+
+            // 🌟 大螢幕專用：監聽廣播彈幕
+            if (currentRole === 'projector') {
+                gameRef.child('combatLogs').on('child_added', snap => {
+                    let log = snap.val();
+                    if (!log || Date.now() - log.timestamp > 10000) return; // 忽略太舊的紀錄
+                    
+                    let msg = ""; let color = "";
+                    if (log.type === 'critical') { msg = `💥 ${log.name} 發動了 會心一擊！`; color = "#FFD54F"; }
+                    if (log.type === 'shield') { msg = `🛡️ ${log.name} 觸發了 絕對防禦！`; color = "#81C784"; }
+                    if (log.type === 'time') { msg = `⏱️ ${log.name} 施放了 時間暫停！`; color = "#4DD0E1"; }
+                    
+                    if (msg) showProjectorLog(msg, color);
+                });
+            }
         }
 
         function triggerGameEnd() { gameRef.child('status').set('finished').then(() => { generateTeacherSummary(); }); }
@@ -656,9 +685,7 @@
             timeLeft = timeLimitSetting;
             document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
             timerInterval = setInterval(() => {
-                // 🌟 如果時間被凍結，就不要扣秒數
                 if (isTimeFrozen) return; 
-                
                 timeLeft--;
                 document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
                 if (timeLeft <= 0) { clearInterval(timerInterval); handleWrongAnswer(); }
@@ -679,19 +706,17 @@
         }
 
         function handleWrongAnswer() {
-            // 🌟 答錯，連擊歸零
             playerCombo = 0;
-
             const sfxHurt = document.getElementById('sfx-hurt'); const sfxWrong = document.getElementById('sfx-wrong');
             if(sfxWrong) { sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {}); }
             
-            // 🌟 判定護盾
             if (hasBuffShield) {
-                hasBuffShield = false; // 消耗護盾
+                hasBuffShield = false; 
                 alert("🛡️ 絕對防禦發動！抵擋了這次錯誤懲罰！");
+                // 傳送廣播事件
+                gameRef.child('combatLogs').push({ name: myPlayerName, type: 'shield', timestamp: Date.now() });
                 updateRPGUI();
             } else {
-                // 正常受傷
                 if(sfxHurt) { setTimeout(() => { sfxHurt.currentTime = 0; sfxHurt.play().catch(() => {}); }, 150); }
                 let dmgTaken = isBossEnraged ? 50 : 25;
                 playerHP -= dmgTaken; 
@@ -709,19 +734,19 @@
         function checkAnswer(idx) {
             clearInterval(timerInterval);
             if (idx === quizData[currentQuestionIndex].correctIndex) {
-                // 🌟 計算獲得金幣與連擊
                 playerCombo++;
                 let earnedGold = 10;
-                if (playerCombo >= 3) { earnedGold += 5; } // 連擊獎勵
+                if (playerCombo >= 3) { earnedGold += 5; } 
                 playerGold += earnedGold;
 
-                // 🌟 計算傷害與會心一擊
                 let baseDmg = 40;
                 let finalDmg = baseDmg + ((playerLevel - 1) * 10); 
                 
                 if (hasBuffDmg) {
-                    finalDmg *= 3; // 傷害3倍
-                    hasBuffDmg = false; // 消耗Buff
+                    finalDmg *= 3; 
+                    hasBuffDmg = false; 
+                    // 傳送廣播事件
+                    gameRef.child('combatLogs').push({ name: myPlayerName, type: 'critical', timestamp: Date.now() });
                     setTimeout(() => alert("💥 會心一擊發動！造成 3 倍巨量傷害！"), 100);
                 }
 
