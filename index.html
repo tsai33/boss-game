@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 7.4 (完整排版版)</title>
+    <title>勇者學園對戰平台 7.5 (純淨版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -98,19 +98,10 @@
         #btn-1 { background-color: #1368ce; border-bottom: 5px solid #0d4a96;} 
         #btn-2 { background-color: #d89e00; border-bottom: 5px solid #9e7400;} 
         #btn-3 { background-color: #26890c; border-bottom: 5px solid #1a5e08;} 
-
-        /* 黑暗迷霧特效 */
-        .mist-active #quiz-content-area { position: relative; }
-        .mist-active #quiz-content-area::before {
-            content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px;
-            background: radial-gradient(circle, rgba(30,0,50,0.85) 0%, rgba(10,0,20,0.95) 100%);
-            backdrop-filter: blur(5px); z-index: 50; border-radius: 15px; pointer-events: none; 
-            animation: float-mist 3s infinite alternate;
-        }
-        .mist-active #question-text, .mist-active .option-btn { filter: blur(2px); opacity: 0.6; }
-        .mist-warning { display: none; color: #E040FB; font-weight: bold; font-size: 18px; text-shadow: 0 0 5px #E040FB; animation: pulse 1s infinite;}
-        .mist-active .mist-warning { display: block; margin-bottom: 10px;}
-        @keyframes float-mist { 0% { opacity: 0.8; } 100% { opacity: 1; } }
+        
+        /* 🌟 QR Code 置中修正 */
+        #qrcode { display: flex; justify-content: center; align-items: center; margin: 20px auto; width: 100%; text-align: center; }
+        #qrcode img, #qrcode canvas { margin: 0 auto; }
 
         .summary-container { display: flex; flex-direction: column; gap: 20px; text-align: left;}
         .summary-box { flex: 1; background: #fff; padding: 20px; border-radius: 10px; border: 2px solid #ddd;}
@@ -178,7 +169,6 @@
             .lb-item { font-size: 18px; margin: 10px 0;}
             .lb-item:first-child { font-size: 20px; }
             .log-toast { font-size: 24px; padding: 15px 25px; }
-            .mist-warning { font-size: 24px; }
         }
     </style>
 </head>
@@ -191,7 +181,6 @@
     <audio id="sfx-heal" src="https://actions.google.com/sounds/v1/water/water_bubble.ogg" preload="auto"></audio>
     <audio id="sfx-buy" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
     <audio id="sfx-ultimate" src="https://actions.google.com/sounds/v1/explosions/big_explosion.ogg" preload="auto"></audio>
-    <audio id="sfx-mist" src="https://actions.google.com/sounds/v1/weather/wind_howl_loop.ogg" preload="auto"></audio>
 
     <div id="screen-home" class="screen-page card">
         <h1>🎮 勇者學園對戰平台</h1>
@@ -339,7 +328,6 @@
         
         <div id="quiz-content-area" style="width: 100%;">
             <div class="card" style="margin-top: 10px; padding-bottom: 10px;">
-                <div class="mist-warning">🌫️ 魔王施放了「黑暗迷霧」！</div>
                 <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
                 <h2 id="question-text" style="margin: 0;">載入中...</h2>
             </div>
@@ -360,7 +348,6 @@
                 <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 30)">⚔️ 會心一擊<br><span style="font-size:12px; color:#f57f17;">(30G)</span></button>
                 <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 40)">🛡️ 絕對防禦<br><span style="font-size:12px; color:#f57f17;">(40G)</span></button>
                 <button class="shop-item" id="btn-shop-time" onclick="buyItem('time', 50)">⏱️ 時間暫停<br><span style="font-size:12px; color:#f57f17;">(50G)</span></button>
-                <button class="shop-item" id="btn-shop-lantern" onclick="buyItem('lantern', 20)">🏮 破魔提燈<br><span style="font-size:12px; color:#f57f17;">(20G)</span></button>
             </div>
             <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5;">🎒 喝生命藥水 (擁有: 0瓶)</button>
         </div>
@@ -421,7 +408,6 @@
         let hasBuffDmg = false;
         let hasBuffShield = false;
         let isTimeFrozen = false;
-        let isMistActive = false; 
         
         let bossTotalHP = 1000; 
         let bossHP = bossTotalHP;
@@ -439,7 +425,7 @@
         let myTotalDamage = 0;
 
         function silentUnlockAudio() {
-            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-heal', 'sfx-buy', 'sfx-ultimate', 'sfx-mist'].forEach(id => {
+            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-heal', 'sfx-buy', 'sfx-ultimate'].forEach(id => {
                 let audio = document.getElementById(id);
                 if (audio) { audio.volume = 0; audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio.volume = 1; }).catch(() => {}); }
             });
@@ -657,10 +643,6 @@
                     timerDisplay.style.backgroundColor = '#ffebee'; timerDisplay.style.borderColor = '#e21b3c'; timerDisplay.style.color = '#e21b3c';
                     timerDisplay.innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
                 }, 10000);
-            } else if (type === 'lantern') {
-                isMistActive = false;
-                document.getElementById('quiz-content-area').classList.remove('mist-active');
-                alert("🏮 破魔提燈照亮了四周！黑暗迷霧已驅散！");
             }
             updateRPGUI();
         }
@@ -716,7 +698,6 @@
                 document.getElementById('btn-shop-dmg').disabled = (playerGold < 30 || hasBuffDmg);
                 document.getElementById('btn-shop-shield').disabled = (playerGold < 40 || hasBuffShield);
                 document.getElementById('btn-shop-time').disabled = (playerGold < 50 || isTimeFrozen);
-                document.getElementById('btn-shop-lantern').disabled = (playerGold < 20 || !isMistActive);
 
                 let buffHtml = "";
                 if(hasBuffDmg) buffHtml += `<div class="buff-badge">⚔️ 傷害 X 3</div>`;
@@ -819,19 +800,6 @@
                 return; 
             }
             
-            if (currentRole === 'student') {
-                if (Math.random() < 0.3) {
-                    isMistActive = true;
-                    document.getElementById('quiz-content-area').classList.add('mist-active');
-                    let sfxMist = document.getElementById('sfx-mist'); 
-                    if(sfxMist) { sfxMist.currentTime = 0; sfxMist.play().catch(()=>{}); }
-                } else {
-                    isMistActive = false;
-                    document.getElementById('quiz-content-area').classList.remove('mist-active');
-                }
-                updateRPGUI(); 
-            }
-
             const q = quizData[currentQuestionIndex];
             document.getElementById('question-text').innerText = q.question;
             for(let i=0; i<4; i++) document.getElementById('btn-' + i).innerText = q.options[i];
