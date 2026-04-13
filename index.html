@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>勇者學園對戰平台 5.6 (智慧難度版)</title>
+    <title>勇者學園對戰平台 6.0 (魔法商城版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -117,8 +117,18 @@
         .opt-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .opt-input { padding: 10px; border: 2px solid #ccc; border-radius: 5px; font-size: 16px; }
         .del-btn { background: #e21b3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;}
-        
         .import-box { background: #fff3e0; padding: 15px; border-radius: 8px; border: 2px dashed #FF9800; margin-bottom: 15px; text-align: left; }
+
+        /* 🌟 商城與金幣系統 UI */
+        .gold-text { color: #f57f17; font-weight: bold; font-size: 20px; }
+        .combo-text { color: #e64a19; font-weight: bold; font-size: 18px; margin-left: 15px; animation: pulse 1s infinite; }
+        .shop-container { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; padding-bottom: 5px;}
+        .shop-item { flex: 1; background: #fffde7; border: 2px solid #ffb300; border-radius: 8px; padding: 10px; font-size: 16px; font-weight: bold; color: #333; cursor: pointer; transition: 0.2s;}
+        .shop-item:hover:not(:disabled) { transform: scale(1.05); background: #ffecb3;}
+        .shop-item:disabled { opacity: 0.5; cursor: not-allowed; border-color: #ccc; filter: grayscale(100%);}
+        .buff-container { display: flex; gap: 10px; justify-content: center; margin-top: 10px; min-height: 35px;}
+        .buff-badge { background: #e3f2fd; color: #1565C0; padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; border: 2px solid #2196f3; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 5px;}
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -128,6 +138,7 @@
     <audio id="sfx-wrong" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
     <audio id="sfx-levelup" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg" preload="auto"></audio>
     <audio id="sfx-heal" src="https://actions.google.com/sounds/v1/water/water_bubble.ogg" preload="auto"></audio>
+    <audio id="sfx-buy" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
 
     <div id="screen-home" class="screen-page card">
         <h1>🎮 勇者學園對戰平台</h1>
@@ -237,22 +248,43 @@
             <div class="hp-text boss-color" id="student-boss-hp-text">👿 魔王血量</div>
             <div class="hp-bar-bg"><div id="student-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
         </div>
+        
         <div class="card" style="padding: 15px; margin-top: 15px;">
             <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
             <div class="hp-bar-bg" style="margin-bottom: 10px;"><div id="player-hp-fill" class="hp-bar-fill player-fill"></div></div>
             <div class="exp-text" id="ui-exp-text">🌟 EXP: 0 / 30</div>
-            <div class="hp-bar-bg" style="height: 10px; border: 1px solid #ccc;"><div id="ui-exp-fill" class="exp-fill"></div></div>
-            <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5;">🎒 喝生命藥水 (擁有: 0瓶)</button>
+            <div class="hp-bar-bg" style="height: 10px; border: 1px solid #ccc; margin-bottom: 10px;"><div id="ui-exp-fill" class="exp-fill"></div></div>
+            
+            <div>
+                <span class="gold-text" id="ui-gold-text">💰 金幣: 0 G</span>
+                <span class="combo-text hidden" id="ui-combo-text">🔥 3 連擊!</span>
+            </div>
+            
+            <div class="buff-container" id="ui-buff-container"></div>
         </div>
+        
         <div class="card" style="padding: 15px; margin-top: 15px;">
             <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
             <h2 id="question-text" style="margin: 0;">載入中...</h2>
         </div>
+        
         <div class="options-container" id="options-box">
             <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
             <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
             <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
             <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
+        </div>
+
+        <div class="card" style="padding: 15px; margin-top: 15px; background: #fff8e1; border-color: #ffc107;">
+            <h3 style="margin: 0 0 5px 0; color: #f57f17; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                🏪 魔法道具商城
+            </h3>
+            <div class="shop-container">
+                <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 30)">⚔️ 會心一擊<br><span style="font-size:14px; color:#f57f17;">(30G)</span></button>
+                <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 40)">🛡️ 絕對防禦<br><span style="font-size:14px; color:#f57f17;">(40G)</span></button>
+                <button class="shop-item" id="btn-shop-time" onclick="buyItem('time', 50)">⏱️ 時間暫停<br><span style="font-size:14px; color:#f57f17;">(50G)</span></button>
+            </div>
+            <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5;">🎒 喝生命藥水 (擁有: 0瓶)</button>
         </div>
     </div>
 
@@ -300,12 +332,18 @@
         let quizData = [];
         let currentQuestionIndex = 0;
         
-        // 🌟 修改：移除固定血量，改為動態變數
         let playerMaxHP = 100;
         let playerHP = playerMaxHP;
         let playerLevel = 1;
         let playerExp = 0;
         let playerPotions = 0;
+        
+        // 🌟 新增：玩家經濟與狀態變數
+        let playerGold = 0;
+        let playerCombo = 0;
+        let hasBuffDmg = false;
+        let hasBuffShield = false;
+        let isTimeFrozen = false;
         
         let bossTotalHP = 1000; 
         let bossHP = bossTotalHP;
@@ -321,7 +359,7 @@
         let myWrongCount = 0;
 
         function silentUnlockAudio() {
-            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-heal'].forEach(id => {
+            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-heal', 'sfx-buy'].forEach(id => {
                 let audio = document.getElementById(id);
                 if (audio) { audio.volume = 0; audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio.volume = 1; }).catch(() => {}); }
             });
@@ -335,19 +373,11 @@
         function verifyTeacherPassword() {
             const pwdInput = document.getElementById('teacher-pwd-input');
             if (pwdInput.value === "8888") { 
-                pwdInput.value = ""; 
-                switchScreen('screen-teacher'); 
-                generateRandomPin(); 
-                loadQuizList();
-            } else { 
-                alert("❌ 密碼錯誤！"); 
-                pwdInput.value = ""; 
-            }
+                pwdInput.value = ""; switchScreen('screen-teacher'); generateRandomPin(); loadQuizList();
+            } else { alert("❌ 密碼錯誤！"); pwdInput.value = ""; }
         }
 
-        function generateRandomPin() {
-            document.getElementById('teacher-pin').value = Math.floor(1000 + Math.random() * 9000);
-        }
+        function generateRandomPin() { document.getElementById('teacher-pin').value = Math.floor(1000 + Math.random() * 9000); }
 
         function addQuestionBox(q='', o1='', o2='', o3='', o4='', ans=1) {
             const container = document.getElementById('quiz-ui-container');
@@ -375,59 +405,38 @@
             container.appendChild(box);
         }
 
-        function toggleImportBox() {
-            const box = document.getElementById('import-section');
-            box.classList.toggle('hidden');
-        }
+        function toggleImportBox() { document.getElementById('import-section').classList.toggle('hidden'); }
 
         function processBatchImport() {
             const rawText = document.getElementById('import-textarea').value.trim();
             if(!rawText) { alert("請先貼上 Excel 的內容！"); return; }
-            
-            let count = 0;
-            let failCount = 0;
-            let lines = rawText.split(/\r?\n/); 
-            
+            let count = 0; let failCount = 0; let lines = rawText.split(/\r?\n/); 
             lines.forEach(line => {
                 if(!line.trim()) return; 
                 let separator = line.includes('\t') ? '\t' : ',';
                 let cols = line.split(separator).map(c => c.trim().replace(/^"|"$/g, '')); 
-                
                 if(cols.length >= 6) {
                     let len = cols.length;
                     let ans = parseInt(cols[len - 1].replace(/[^0-9]/g, ''));
                     if(isNaN(ans) || ans < 1 || ans > 4) ans = 1; 
-                    
                     let o4 = cols[len - 2]; let o3 = cols[len - 3]; let o2 = cols[len - 4]; let o1 = cols[len - 5];
                     let q = cols.slice(0, len - 5).join(' '); 
-
-                    addQuestionBox(q, o1, o2, o3, o4, ans);
-                    count++;
-                } else {
-                    failCount++; 
-                }
+                    addQuestionBox(q, o1, o2, o3, o4, ans); count++;
+                } else { failCount++; }
             });
-            
             if (count > 0) {
                 let msg = `✅ 成功匯入 ${count} 題！`;
-                if(failCount > 0) msg += `\n⚠️ 有 ${failCount} 行資料因為不到6個欄位被跳過。`;
-                alert(msg + "\n請在下方檢查與修改，確認無誤後可存入雲端！");
-                document.getElementById('import-textarea').value = ''; 
-                toggleImportBox(); 
-            } else {
-                alert("❌ 匯入失敗！請確認每一行至少都有「題目 + 4個選項 + 正確數字」喔！");
-            }
+                if(failCount > 0) msg += `\n⚠️ 有 ${failCount} 行資料跳過。`;
+                alert(msg); document.getElementById('import-textarea').value = ''; toggleImportBox(); 
+            } else { alert("❌ 匯入失敗！"); }
         }
 
         function getParsedQuizFromUI() {
             let arr = [];
             document.querySelectorAll('.q-edit-box').forEach(box => {
-                let q = box.querySelector('.q-val').value.trim();
-                let o1 = box.querySelector('.o1-val').value.trim();
-                let o2 = box.querySelector('.o2-val').value.trim();
-                let o3 = box.querySelector('.o3-val').value.trim();
-                let o4 = box.querySelector('.o4-val').value.trim();
-                let ans = parseInt(box.querySelector('.ans-val').value) - 1;
+                let q = box.querySelector('.q-val').value.trim(); let o1 = box.querySelector('.o1-val').value.trim();
+                let o2 = box.querySelector('.o2-val').value.trim(); let o3 = box.querySelector('.o3-val').value.trim();
+                let o4 = box.querySelector('.o4-val').value.trim(); let ans = parseInt(box.querySelector('.ans-val').value) - 1;
                 if(q) { arr.push({ question: q, options: [o1, o2, o3, o4], correctIndex: ans }); }
             });
             return arr;
@@ -436,15 +445,10 @@
         function saveQuizBank() {
             const saveName = document.getElementById('quiz-save-name').value.trim();
             const quizArray = getParsedQuizFromUI();
-            
-            if (!saveName) { alert("請填寫「題庫名稱」！"); return; }
-            if (quizArray.length === 0) { alert("請至少新增一道題目！"); return; }
-
+            if (!saveName || quizArray.length === 0) { alert("請填寫名稱並新增題目！"); return; }
             db.ref('SavedQuizzes/' + saveName).set(quizArray).then(() => {
-                alert(`✅ 題庫【${saveName}】已成功儲存至雲端！\n共 ${quizArray.length} 題。`);
-                document.getElementById('quiz-save-name').value = "";
-                loadQuizList(); 
-            }).catch(e => { alert("上傳失敗，請確認網路連線。"); });
+                alert(`✅ 儲存成功！`); document.getElementById('quiz-save-name').value = ""; loadQuizList(); 
+            });
         }
 
         function loadQuizList() {
@@ -452,37 +456,21 @@
             db.ref('SavedQuizzes').on('value', snap => {
                 selectElement.innerHTML = '<option value="">-- 選擇雲端題庫 --</option>'; 
                 const data = snap.val();
-                if(data) {
-                    for (let name in data) {
-                        let option = document.createElement('option');
-                        option.value = name; option.text = name;
-                        selectElement.appendChild(option);
-                    }
-                } else {
-                    selectElement.innerHTML = '<option value="">-- 雲端尚無題庫 --</option>'; 
-                }
+                if(data) { for (let name in data) { let option = document.createElement('option'); option.value = name; option.text = name; selectElement.appendChild(option); } } 
             });
         }
 
         function loadQuizBank() {
             const selectedName = document.getElementById('quiz-load-select').value;
-            if (!selectedName) { alert("請先從下拉選單選擇一個題庫！"); return; }
-
+            if (!selectedName) return;
             db.ref('SavedQuizzes/' + selectedName).once('value', snap => {
                 const content = snap.val();
                 if(content) {
-                    const container = document.getElementById('quiz-ui-container');
-                    container.innerHTML = ''; 
-                    
+                    const container = document.getElementById('quiz-ui-container'); container.innerHTML = ''; 
                     if (typeof content === 'string') {
-                        content.split('\n').forEach(line => {
-                            let cols = line.includes('\t') ? line.split('\t') : line.split(',');
-                            if(cols.length >= 6) { addQuestionBox(cols[0].trim(), cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim(), parseInt(cols[5].replace(/[^0-9]/g, ''))); }
-                        });
-                    } else {
-                        content.forEach(q => { addQuestionBox(q.question, q.options[0], q.options[1], q.options[2], q.options[3], q.correctIndex + 1); });
-                    }
-                    alert(`☁️ 已載入題庫：【${selectedName}】`);
+                        content.split('\n').forEach(line => { let cols = line.includes('\t') ? line.split('\t') : line.split(','); if(cols.length >= 6) { addQuestionBox(cols[0].trim(), cols[1].trim(), cols[2].trim(), cols[3].trim(), cols[4].trim(), parseInt(cols[5].replace(/[^0-9]/g, ''))); } });
+                    } else { content.forEach(q => { addQuestionBox(q.question, q.options[0], q.options[1], q.options[2], q.options[3], q.correctIndex + 1); }); }
+                    alert(`☁️ 載入成功！`);
                 }
             });
         }
@@ -492,24 +480,16 @@
             const expectedPlayers = document.getElementById('teacher-expected-players').value || 24;
             const timeLimit = document.getElementById('teacher-time-limit').value;
             const parsedQuiz = getParsedQuizFromUI(); 
-            
-            if(!pin) { alert("請設定 PIN 碼！"); return; }
-            if(parsedQuiz.length === 0) { alert("請至少新增一道完整的題目！"); return; }
-
-            // 🌟 核心：自動計算魔王血量 (人數 * 題數 * 40預期傷害)
+            if(!pin || parsedQuiz.length === 0) return;
             const autoBossHP = Math.max(1000, parseInt(expectedPlayers) * parsedQuiz.length * 40);
-
             gameRef.set({ 
                 pinCode: pin, gameType: 'boss_battle', timeLimit: parseInt(timeLimit), 
                 bossTotalHP: autoBossHP, currentBossHP: autoBossHP, bossEnraged: false,
                 questions: parsedQuiz, status: 'waiting', players: {}, questionStats: {} 
             }).then(() => {
-                currentRole = "projector";
-                document.getElementById('lobby-pin-display').innerText = `👉 PIN：${pin}`;
-                const qrContainer = document.getElementById("qrcode");
-                qrContainer.innerHTML = ""; new QRCode(qrContainer, { text: window.location.href.split('?')[0] + "?pin=" + pin, width: 200, height: 200 });
-                switchScreen('screen-teacher-lobby');
-                listenToPlayersJoined(); 
+                currentRole = "projector"; document.getElementById('lobby-pin-display').innerText = `👉 PIN：${pin}`;
+                const qrContainer = document.getElementById("qrcode"); qrContainer.innerHTML = ""; new QRCode(qrContainer, { text: window.location.href.split('?')[0] + "?pin=" + pin, width: 200, height: 200 });
+                switchScreen('screen-teacher-lobby'); listenToPlayersJoined(); 
             });
         }
 
@@ -521,10 +501,7 @@
             });
         }
 
-        function startBattle() {
-            silentUnlockAudio();
-            gameRef.child('status').set('playing').then(() => { switchScreen('screen-projector'); updateRPGUI(); startGameListener(); });
-        }
+        function startBattle() { silentUnlockAudio(); gameRef.child('status').set('playing').then(() => { switchScreen('screen-projector'); updateRPGUI(); startGameListener(); }); }
 
         window.onload = function() {
             const urlPin = new URLSearchParams(window.location.search).get('pin');
@@ -535,27 +512,21 @@
             silentUnlockAudio();
             const inputPin = document.getElementById('student-pin').value.trim();
             const playerName = document.getElementById('student-name').value.trim();
-            if(!inputPin || !playerName) { alert("請填寫完整！"); return; }
+            if(!inputPin || !playerName) return;
             gameRef.once('value', snap => {
                 const data = snap.val();
                 if (data && data.pinCode === inputPin) {
-                    currentRole = "student";
-                    quizData = data.questions;
-                    bossTotalHP = data.bossTotalHP;
-                    bossHP = data.currentBossHP;
-                    timeLimitSetting = data.timeLimit || 50;
+                    currentRole = "student"; quizData = data.questions; bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; timeLimitSetting = data.timeLimit || 50;
                     
-                    // 🌟 核心：自動計算學生血量 (題數 * 50，保證不會提早死掉)
-                    playerMaxHP = quizData.length * 50;
-                    playerHP = playerMaxHP;
+                    // 🌟 重置學生狀態
+                    playerMaxHP = quizData.length * 50; playerHP = playerMaxHP;
+                    playerGold = 0; playerCombo = 0; hasBuffDmg = false; hasBuffShield = false; isTimeFrozen = false;
 
                     myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
                     gameRef.child('players').child(myPlayerId).set({ name: playerName, correct: 0, wrong: 0 });
-                    
                     document.getElementById('student-lobby-name').innerText = `嗨，${playerName}！`;
                     document.getElementById('display-player-name').innerHTML = `${playerName} <span id="ui-level" class="lvl-badge">Lv.1</span>`;
-                    switchScreen('screen-student-lobby');
-                    listenToGameStart();
+                    switchScreen('screen-student-lobby'); listenToGameStart();
                 } else { alert("PIN碼錯誤或遊戲已開始！"); }
             });
         }
@@ -564,27 +535,50 @@
             gameRef.child('status').on('value', snap => { 
                 let status = snap.val();
                 if (status === 'playing' && currentRole === 'student') { 
-                    currentQuestionIndex = 0; 
-                    switchScreen('screen-game'); updateRPGUI(); startGameListener(); loadQuestion(); 
+                    currentQuestionIndex = 0; switchScreen('screen-game'); updateRPGUI(); startGameListener(); loadQuestion(); 
                 }
-                if (status === 'finished' && currentRole === 'student') {
-                    clearInterval(timerInterval);
-                    generateStudentSummary();
-                }
+                if (status === 'finished' && currentRole === 'student') { clearInterval(timerInterval); generateStudentSummary(); }
             });
+        }
+
+        // 🌟 新增：購買道具的邏輯
+        function buyItem(type, cost) {
+            if (playerGold < cost) return;
+            playerGold -= cost;
+            
+            let sfxBuy = document.getElementById('sfx-buy');
+            if(sfxBuy) { sfxBuy.currentTime = 0; sfxBuy.play().catch(()=>{}); }
+
+            if(type === 'dmg') { 
+                hasBuffDmg = true; 
+            } else if (type === 'shield') {
+                hasBuffShield = true;
+            } else if (type === 'time') {
+                isTimeFrozen = true;
+                const timerDisplay = document.getElementById('timer-display');
+                timerDisplay.style.backgroundColor = '#e3f2fd';
+                timerDisplay.style.borderColor = '#2196f3';
+                timerDisplay.style.color = '#1565C0';
+                timerDisplay.innerText = `⏱️ 時間凍結中...`;
+                
+                // 10秒後解除凍結
+                setTimeout(() => {
+                    isTimeFrozen = false;
+                    timerDisplay.style.backgroundColor = '#ffebee';
+                    timerDisplay.style.borderColor = '#e21b3c';
+                    timerDisplay.style.color = '#e21b3c';
+                    timerDisplay.innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
+                }, 10000);
+            }
+            updateRPGUI();
         }
 
         function updateRPGUI() {
             let bossPercent = Math.max(0, (bossHP / bossTotalHP) * 100);
             if (bossPercent <= 50 && !isBossEnraged && bossHP > 0) {
                 isBossEnraged = true;
-                if(currentRole === "projector") {
-                    document.getElementById('proj-rage-warning').classList.remove('hidden');
-                    document.getElementById('projector-boss-img').classList.add('boss-enraged');
-                } else if(currentRole === "student") {
-                    document.getElementById('student-rage-warning').classList.remove('hidden');
-                    document.getElementById('student-boss-img').classList.add('boss-enraged');
-                }
+                if(currentRole === "projector") { document.getElementById('proj-rage-warning').classList.remove('hidden'); document.getElementById('projector-boss-img').classList.add('boss-enraged'); } 
+                else if(currentRole === "student") { document.getElementById('student-rage-warning').classList.remove('hidden'); document.getElementById('student-boss-img').classList.add('boss-enraged'); }
             }
             if (currentRole === "projector") { 
                 document.getElementById('projector-boss-hp-fill').style.width = bossPercent + '%'; 
@@ -604,29 +598,43 @@
 
                 let btnPotion = document.getElementById('btn-potion');
                 btnPotion.innerText = `🎒 喝生命藥水 (擁有: ${playerPotions}瓶)`;
-                if(playerPotions > 0 && playerHP < playerMaxHP) {
-                    btnPotion.disabled = false; btnPotion.style.opacity = "1";
+                btnPotion.disabled = !(playerPotions > 0 && playerHP < playerMaxHP);
+                btnPotion.style.opacity = btnPotion.disabled ? "0.5" : "1";
+
+                // 🌟 更新金幣與連擊 UI
+                document.getElementById('ui-gold-text').innerText = `💰 金幣: ${playerGold} G`;
+                let comboDisplay = document.getElementById('ui-combo-text');
+                if(playerCombo >= 3) {
+                    comboDisplay.innerText = `🔥 ${playerCombo} 連擊!`;
+                    comboDisplay.classList.remove('hidden');
                 } else {
-                    btnPotion.disabled = true; btnPotion.style.opacity = "0.5";
+                    comboDisplay.classList.add('hidden');
                 }
+
+                // 🌟 更新商城按鈕狀態 (錢不夠就反灰)
+                document.getElementById('btn-shop-dmg').disabled = (playerGold < 30 || hasBuffDmg);
+                document.getElementById('btn-shop-shield').disabled = (playerGold < 40 || hasBuffShield);
+                document.getElementById('btn-shop-time').disabled = (playerGold < 50 || isTimeFrozen);
+
+                // 🌟 更新目前擁有的 Buff 標籤
+                let buffHtml = "";
+                if(hasBuffDmg) buffHtml += `<div class="buff-badge">⚔️ 傷害 X 3</div>`;
+                if(hasBuffShield) buffHtml += `<div class="buff-badge" style="border-color:#4CAF50; color:#2e7d32;">🛡️ 護盾啟動</div>`;
+                if(isTimeFrozen) buffHtml += `<div class="buff-badge" style="border-color:#9C27B0; color:#6A1B9A;">⏱️ 凍結中</div>`;
+                document.getElementById('ui-buff-container').innerHTML = buffHtml;
             }
         }
 
         function usePotion() {
             if (playerPotions > 0 && playerHP < playerMaxHP) {
-                playerPotions--;
-                playerHP = Math.min(playerMaxHP, playerHP + 30); 
-                updateRPGUI();
-                let sfx = document.getElementById('sfx-heal');
-                if(sfx) { sfx.currentTime = 0; sfx.play().catch(()=>{}); }
-                document.body.classList.add('flash-green');
-                setTimeout(() => document.body.classList.remove('flash-green'), 300);
+                playerPotions--; playerHP = Math.min(playerMaxHP, playerHP + 30); updateRPGUI();
+                let sfx = document.getElementById('sfx-heal'); if(sfx) { sfx.currentTime = 0; sfx.play().catch(()=>{}); }
+                document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
             }
         }
 
         function triggerUltimateHitEffect() {
-            const sfx = document.getElementById('sfx-attack');
-            if(sfx) { sfx.currentTime = 0; sfx.play().catch(() => {}); }
+            const sfx = document.getElementById('sfx-attack'); if(sfx) { sfx.currentTime = 0; sfx.play().catch(() => {}); }
             const containerId = currentRole === "projector" ? 'projector-hit-container' : 'student-hit-container';
             const container = document.getElementById(containerId);
             if(container) { container.classList.remove('ultimate-hit'); void container.offsetWidth; container.classList.add('ultimate-hit'); }
@@ -636,12 +644,8 @@
             gameRef.child('currentBossHP').on('value', snap => {
                 let newHP = snap.val();
                 if (newHP !== null && newHP < bossHP) triggerUltimateHitEffect();
-                if (newHP !== null) {
-                    bossHP = newHP;
-                    if (bossHP < 0) bossHP = 0; // 防止負數血量
-                }
+                if (newHP !== null) { bossHP = newHP; if (bossHP < 0) bossHP = 0; }
                 updateRPGUI();
-                // 🌟 修改：不再因為魔王血量歸零而強制結束遊戲，讓學生繼續作答打怪！
             });
         }
 
@@ -652,6 +656,9 @@
             timeLeft = timeLimitSetting;
             document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
             timerInterval = setInterval(() => {
+                // 🌟 如果時間被凍結，就不要扣秒數
+                if (isTimeFrozen) return; 
+                
                 timeLeft--;
                 document.getElementById('timer-display').innerText = `⏳ 剩餘時間：${timeLeft} 秒`;
                 if (timeLeft <= 0) { clearInterval(timerInterval); handleWrongAnswer(); }
@@ -659,7 +666,6 @@
         }
 
         function loadQuestion() {
-            // 🌟 修改：即使玩家血量歸零或魔王血量歸零，只要題目還沒完就繼續出題
             if (currentQuestionIndex >= quizData.length) { 
                 clearInterval(timerInterval); 
                 document.getElementById('question-text').innerText = "作答完畢！請看大螢幕等待結算...";
@@ -673,31 +679,52 @@
         }
 
         function handleWrongAnswer() {
-            const sfxHurt = document.getElementById('sfx-hurt');
-            const sfxWrong = document.getElementById('sfx-wrong');
-            if(sfxWrong) { sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {}); }
-            if(sfxHurt) { setTimeout(() => { sfxHurt.currentTime = 0; sfxHurt.play().catch(() => {}); }, 150); }
-            
-            let dmgTaken = isBossEnraged ? 50 : 25;
-            playerHP -= dmgTaken; 
-            if (playerHP < 0) playerHP = 0; // 🌟 確保血量不為負數
-            updateRPGUI();
+            // 🌟 答錯，連擊歸零
+            playerCombo = 0;
 
-            document.body.classList.add('flash-red'); setTimeout(() => document.body.classList.remove('flash-red'), 300);
+            const sfxHurt = document.getElementById('sfx-hurt'); const sfxWrong = document.getElementById('sfx-wrong');
+            if(sfxWrong) { sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {}); }
+            
+            // 🌟 判定護盾
+            if (hasBuffShield) {
+                hasBuffShield = false; // 消耗護盾
+                alert("🛡️ 絕對防禦發動！抵擋了這次錯誤懲罰！");
+                updateRPGUI();
+            } else {
+                // 正常受傷
+                if(sfxHurt) { setTimeout(() => { sfxHurt.currentTime = 0; sfxHurt.play().catch(() => {}); }, 150); }
+                let dmgTaken = isBossEnraged ? 50 : 25;
+                playerHP -= dmgTaken; 
+                if (playerHP < 0) playerHP = 0; 
+                updateRPGUI();
+                document.body.classList.add('flash-red'); setTimeout(() => document.body.classList.remove('flash-red'), 300);
+            }
             
             myWrongCount++;
             gameRef.child('players').child(myPlayerId).update({ wrong: myWrongCount });
             gameRef.child('questionStats').child(currentQuestionIndex).child('wrong').transaction(curr => (curr || 0) + 1);
-
-            // 🌟 修改：移除死亡判定，讓學生可以繼續作答到最後一題
             currentQuestionIndex++; setTimeout(loadQuestion, 500);
         }
 
         function checkAnswer(idx) {
             clearInterval(timerInterval);
             if (idx === quizData[currentQuestionIndex].correctIndex) {
+                // 🌟 計算獲得金幣與連擊
+                playerCombo++;
+                let earnedGold = 10;
+                if (playerCombo >= 3) { earnedGold += 5; } // 連擊獎勵
+                playerGold += earnedGold;
+
+                // 🌟 計算傷害與會心一擊
                 let baseDmg = 40;
                 let finalDmg = baseDmg + ((playerLevel - 1) * 10); 
+                
+                if (hasBuffDmg) {
+                    finalDmg *= 3; // 傷害3倍
+                    hasBuffDmg = false; // 消耗Buff
+                    setTimeout(() => alert("💥 會心一擊發動！造成 3 倍巨量傷害！"), 100);
+                }
+
                 let newHP = Math.max(0, bossHP - finalDmg);
                 gameRef.child('currentBossHP').set(newHP);
                 
@@ -711,39 +738,32 @@
                     setTimeout(() => document.body.classList.remove('flash-gold'), 500);
                 }
 
-                if (Math.random() <= 0.3) {
-                    playerPotions++;
-                    setTimeout(() => alert("🎁 恭喜！魔王掉落了一瓶【生命藥水】！"), 100);
-                }
+                if (Math.random() <= 0.3) { playerPotions++; setTimeout(() => alert("🎁 恭喜！魔王掉落了一瓶【生命藥水】！"), 100); }
 
                 updateRPGUI(); 
                 myCorrectCount++;
                 gameRef.child('players').child(myPlayerId).update({ correct: myCorrectCount });
                 gameRef.child('questionStats').child(currentQuestionIndex).child('correct').transaction(curr => (curr || 0) + 1);
-
                 currentQuestionIndex++; setTimeout(loadQuestion, 500);
             } else { handleWrongAnswer(); }
         }
 
         function toggleDetail(idx) {
             let detailBox = document.getElementById('q-detail-' + idx);
-            if (detailBox.style.display === 'none' || detailBox.style.display === '') {
-                detailBox.style.display = 'block';
-            } else { detailBox.style.display = 'none'; }
+            if (detailBox.style.display === 'none' || detailBox.style.display === '') { detailBox.style.display = 'block'; } else { detailBox.style.display = 'none'; }
         }
 
         function exportToCSV() {
             gameRef.once('value', snap => {
                 const data = snap.val();
-                if(!data || !data.players) { alert("目前沒有玩家資料可以匯出！"); return; }
+                if(!data || !data.players) return;
                 let csvContent = "\uFEFF學生姓名,答對題數,答錯題數,獲得經驗值\n";
                 Object.values(data.players).forEach(p => {
                     let correct = p.correct || 0; let wrong = p.wrong || 0; let exp = correct * 10; 
                     csvContent += `${p.name},${correct},${wrong},${exp}\n`;
                 });
                 let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                let url = URL.createObjectURL(blob);
-                let link = document.createElement("a");
+                let url = URL.createObjectURL(blob); let link = document.createElement("a");
                 link.setAttribute("href", url); link.setAttribute("download", "勇者學園班級戰報.csv");
                 document.body.appendChild(link); link.click(); document.body.removeChild(link);
             });
@@ -752,33 +772,22 @@
         function generateTeacherSummary() {
             switchScreen('screen-summary-teacher');
             gameRef.once('value', snap => {
-                const data = snap.val();
-                if(!data) return;
+                const data = snap.val(); if(!data) return;
                 let players = Object.values(data.players || {});
                 let sortedByCorrect = [...players].sort((a, b) => (b.correct || 0) - (a.correct || 0));
                 let sortedByWrong = [...players].sort((a, b) => (b.wrong || 0) - (a.wrong || 0));
 
-                let mvpHTML = "";
-                sortedByCorrect.slice(0, 5).forEach((p, i) => { if((p.correct || 0) > 0) mvpHTML += `<li><span>第 ${i+1} 名：${p.name}</span> <span>✅ ${p.correct} 題</span></li>`; });
+                let mvpHTML = ""; sortedByCorrect.slice(0, 5).forEach((p, i) => { if((p.correct || 0) > 0) mvpHTML += `<li><span>第 ${i+1} 名：${p.name}</span> <span>✅ ${p.correct} 題</span></li>`; });
                 document.getElementById('mvp-list').innerHTML = mvpHTML || "<li>無人答對任何題目</li>";
 
-                let helpHTML = "";
-                sortedByWrong.slice(0, 5).forEach((p, i) => { if((p.wrong || 0) > 0) helpHTML += `<li><span>⚠️ 需要急救：${p.name}</span> <span>❌ 錯 ${p.wrong} 題</span></li>`; });
+                let helpHTML = ""; sortedByWrong.slice(0, 5).forEach((p, i) => { if((p.wrong || 0) > 0) helpHTML += `<li><span>⚠️ 需要急救：${p.name}</span> <span>❌ 錯 ${p.wrong} 題</span></li>`; });
                 document.getElementById('help-list').innerHTML = helpHTML || "<li>沒人答錯！</li>";
 
-                let statsHTML = "";
-                let qStats = data.questionStats || {};
+                let statsHTML = ""; let qStats = data.questionStats || {};
                 data.questions.forEach((q, index) => {
-                    let stat = qStats[index] || { correct: 0, wrong: 0 };
-                    let total = (stat.correct || 0) + (stat.wrong || 0);
-                    let wrongRate = total === 0 ? 0 : Math.round(((stat.wrong || 0) / total) * 100);
+                    let stat = qStats[index] || { correct: 0, wrong: 0 }; let total = (stat.correct || 0) + (stat.wrong || 0); let wrongRate = total === 0 ? 0 : Math.round(((stat.wrong || 0) / total) * 100);
                     let optionsHTML = ""; let labels = ['A', 'B', 'C', 'D'];
-                    q.options.forEach((opt, optIdx) => {
-                        let isCorrect = (optIdx === q.correctIndex);
-                        let optClass = isCorrect ? "q-option q-correct" : "q-option";
-                        let mark = isCorrect ? "✅ " : "⚪ ";
-                        optionsHTML += `<div class="${optClass}">${mark}${labels[optIdx]}) ${opt}</div>`;
-                    });
+                    q.options.forEach((opt, optIdx) => { let isCorrect = (optIdx === q.correctIndex); let optClass = isCorrect ? "q-option q-correct" : "q-option"; let mark = isCorrect ? "✅ " : "⚪ "; optionsHTML += `<div class="${optClass}">${mark}${labels[optIdx]}) ${opt}</div>`; });
                     statsHTML += `<div class="stat-item" onclick="toggleDetail(${index})"><strong>Q${index+1}: ${q.question} ⬇️</strong><br><span style="color: green;">✔ 答對：${stat.correct || 0} 人</span> | <span style="color: red;">✖ 答錯：${stat.wrong || 0} 人</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${wrongRate}%;"></div></div><div style="text-align: right; font-size: 14px; margin-top: 2px;">錯誤率 ${wrongRate}%</div><div id="q-detail-${index}" class="q-detail-box">${optionsHTML}</div></div>`;
                 });
                 document.getElementById('question-stats-list').innerHTML = statsHTML;
@@ -789,11 +798,8 @@
             switchScreen('screen-summary-student');
             document.getElementById('my-final-score').innerText = `你的戰績：✅ 答對 ${myCorrectCount} 題 ｜ ❌ 答錯 ${myWrongCount} 題`;
             gameRef.once('value', snap => {
-                const data = snap.val();
-                if(data && data.players) {
-                    let players = Object.values(data.players);
-                    let sortedByCorrect = [...players].sort((a, b) => (b.correct || 0) - (a.correct || 0));
-                    let mvpHTML = "";
+                const data = snap.val(); if(data && data.players) {
+                    let players = Object.values(data.players); let sortedByCorrect = [...players].sort((a, b) => (b.correct || 0) - (a.correct || 0)); let mvpHTML = "";
                     sortedByCorrect.slice(0, 5).forEach((p, i) => { if((p.correct || 0) > 0) mvpHTML += `<li><span>🏅 第 ${i+1} 名：${p.name}</span> <span style="float:right;">✅ ${p.correct}</span></li>`; });
                     document.getElementById('student-mvp-list').innerHTML = mvpHTML;
                 }
