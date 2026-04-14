@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 9.5 (極速修復版)</title>
+    <title>勇者學園對戰平台 9.6 (終極完美版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -24,10 +24,10 @@
             overflow-x: hidden;
         }
 
-        /* 強制修復紅綠金光閃爍 (拿掉偽元素，改回最穩定的背景覆蓋) */
-        .flash-red { background-color: rgba(255, 0, 0, 0.7) !important; transition: none !important; }
-        .flash-green { background-color: rgba(0, 255, 0, 0.5) !important; transition: none !important; } 
-        .flash-gold { background-color: rgba(255, 215, 0, 0.6) !important; transition: none !important; } 
+        /* 🌟 強制渲染：全螢幕閃爍特效，保證絕對不會被蓋住 */
+        body.flash-red::after { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 0, 0, 0.6); z-index: 999999; pointer-events: none; }
+        body.flash-green::after { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 255, 0, 0.3); z-index: 999999; pointer-events: none; }
+        body.flash-gold::after { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 215, 0, 0.4); z-index: 999999; pointer-events: none; }
         
         .card { background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 95%; max-width: 600px; margin: 10px auto; border: 2px solid rgba(255,255,255,0.8); position: relative;}
         .hidden { display: none !important; }
@@ -61,7 +61,7 @@
         
         .hp-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 0px white;}
         .hp-bar-bg { width: 100%; height: 25px; background-color: #333; border-radius: 15px; border: 3px solid #fff; overflow: hidden; box-shadow: inset 0 0 10px black; margin: 0 auto; position: relative;}
-        .hp-bar-fill { height: 100%; transition: width 0.1s ease-out; } /* 加快扣血動畫視覺 */
+        .hp-bar-fill { height: 100%; transition: width 0.3s ease-out; }
         .boss-fill { background: linear-gradient(90deg, #ff0000, #ff4d4d); width: 100%; }
         .player-fill { background: linear-gradient(90deg, #00b300, #33ff33); width: 100%; }
         .exp-fill { background: linear-gradient(90deg, #FFD700, #FFA500); width: 0%; height: 100%; transition: width 0.3s;}
@@ -385,8 +385,8 @@
             <div class="hp-text" id="student-f1-progress-text">🏆 車隊里程: 0 m</div>
         </div>
         
-        <div class="card" id="hp-exp-zone" style="margin-top: 10px;">
-            <div>
+        <div class="card" style="margin-top: 10px;">
+            <div id="hp-exp-zone">
                 <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
                 <div class="hp-bar-bg" style="margin-bottom: 10px;"><div id="player-hp-fill" class="hp-bar-fill player-fill"></div></div>
                 <div class="exp-text" id="ui-exp-text">🌟 EXP: 0 / 30</div>
@@ -498,7 +498,7 @@
         let timeLeft = 60; let timeLimitSetting = 60; let timerInterval;
         let myPlayerId = ""; let myPlayerName = ""; 
 
-        // 🌟 強制置中彈出特效函數
+        // 🌟 中央超大彈出視窗
         function showCenterPopup(msg, bgColor) {
             let popup = document.createElement('div');
             popup.innerText = msg;
@@ -763,7 +763,7 @@
                     document.getElementById('shop-f1').classList.add('hidden');
                     document.getElementById('hp-exp-zone').classList.remove('hidden');
                     
-                    // 🌟 確保 timer-card 與 options-box 絕對顯示
+                    // 🌟 確保題目的容器和選項絕對不會被隱藏
                     document.getElementById('timer-card').classList.remove('hidden');
                     document.getElementById('timer-display').classList.remove('hidden');
                     document.getElementById('options-box').classList.remove('hidden');
@@ -826,7 +826,7 @@
             let sfxBuy = document.getElementById('sfx-buy'); if(sfxBuy) { sfxBuy.currentTime = 0; sfxBuy.play().catch(()=>{}); }
 
             if(type === 'dmg') { hasBuffDmg = true; showCenterPopup("⚔️ 獲得會心一擊！", "#FF9800"); } 
-            else if (type === 'shield' || type === 'bombshield' || type === 'f1shield') { hasBuffShield = true; showCenterPopup("🛡️ 獲得護盾！", "#4CAF50"); } 
+            else if (type === 'shield' || type === 'bombshield') { hasBuffShield = true; showCenterPopup("🛡️ 獲得護盾！", "#4CAF50"); } 
             else if (type === 'timeadd') {
                 gameRef.child('bombEndTime').transaction(t => t + 10000);
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'timeadd', timestamp: Date.now() });
@@ -839,7 +839,7 @@
             }
             else if (type === 'nitro') {
                 let sfxNitro = document.getElementById('sfx-nitro'); if(sfxNitro) { sfxNitro.currentTime = 0; sfxNitro.play().catch(()=>{}); }
-                gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 300);
+                gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 300); 
                 gameRef.child('f1Teams').child(myF1Team).child('isNitro').set(true);
                 setTimeout(() => { gameRef.child('f1Teams').child(myF1Team).child('isNitro').set(false); }, 2000);
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'nitro', team: teamNames[myF1Team], timestamp: Date.now() });
@@ -871,7 +871,6 @@
                 }
                 if (currentRole === "projector") { 
                     document.getElementById('projector-boss-hp-fill').style.width = bossPercent + '%'; 
-                    // 🌟 強制顯示魔王具體血量數字
                     document.getElementById('projector-boss-hp-text').innerText = `👿 魔王血量：${Math.floor(bossHP)} / ${bossTotalHP}`; 
                 } else if (currentRole === "student") { 
                     document.getElementById('student-boss-hp-fill').style.width = bossPercent + '%'; 
@@ -900,7 +899,6 @@
                     document.getElementById('btn-shop-nitro').disabled = (playerGold < 30);
                     document.getElementById('btn-shop-banana').disabled = (playerGold < 40);
                     document.getElementById('btn-shop-blueshell').disabled = (playerGold < 80);
-                    document.getElementById('btn-shop-f1shield').disabled = (playerGold < 40 || hasBuffShield);
                 }
             }
 
@@ -951,9 +949,7 @@
                             showProjectorLog("☄️ 全班大絕招發動！", "#FFD700", 'boss');
                             
                             let dmg = Math.floor(bossTotalHP * 0.15); 
-                            // 🌟 強制遠端扣血
-                            let targetHP = Math.max(0, bossHP - dmg);
-                            gameRef.child('currentBossHP').set(targetHP); 
+                            gameRef.child('currentBossHP').transaction(curr => Math.max(0, (curr || bossTotalHP) - dmg));
                             gameRef.child('classEnergy').set(0); gameRef.child('ultimateFired').set(false); 
                         }
                     });
@@ -1083,7 +1079,6 @@
             document.getElementById('question-text').innerText = q.question;
             for(let i=0; i<4; i++) document.getElementById('btn-' + i).innerText = q.options[i];
             
-            // 確保選項每次都顯示
             document.getElementById('options-box').classList.remove('hidden');
             startTimer();
         }
@@ -1122,7 +1117,6 @@
             if (idx === quizData[currentQuestionIndex].correctIndex) {
                 playerCombo++; let earnedGold = 10; if (playerCombo >= 3) { earnedGold += 5; } playerGold += earnedGold;
                 
-                // 🌟 強制播放答對/攻擊音效
                 let sfxAtk = document.getElementById('sfx-attack'); if(sfxAtk) { sfxAtk.currentTime=0; sfxAtk.play().catch(()=>{}); }
 
                 if (currentGameType === 'boss_battle') {
@@ -1134,9 +1128,7 @@
                         showCenterPopup("💥 會心一擊！傷害 3 倍！", "#FF9800"); 
                     }
                     
-                    // 🌟 強制同步扣血
-                    let targetHP = Math.max(0, bossHP - finalDmg);
-                    gameRef.child('currentBossHP').set(targetHP);
+                    gameRef.child('currentBossHP').transaction(curr => Math.max(0, (curr || bossTotalHP) - finalDmg));
                     myTotalDamage += finalDmg;
                     
                     playerExp += 10; let expNeeded = playerLevel * 30;
@@ -1144,7 +1136,6 @@
                         playerLevel++; playerExp -= expNeeded; let sfxLvl = document.getElementById('sfx-levelup'); if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); } 
                         document.body.classList.add('flash-gold'); setTimeout(() => document.body.classList.remove('flash-gold'), 500); 
                     } else {
-                        // 🌟 強制綠光閃爍
                         document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
                     }
                 } else if (currentGameType === 'bomb_defusal') {
@@ -1152,7 +1143,7 @@
                     gameRef.child('wiresCut').transaction(w => (w || 0) + 1);
                     document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
                 } else if (currentGameType === 'f1_racing') {
-                    gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 100); // 🌟 答對直接 100m
+                    gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 100);
                     document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
                 }
 
