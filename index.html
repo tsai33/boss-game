@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 11.1 (穩定純淨版)</title>
+    <title>勇者學園對戰平台 12.0 (平板適配版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -141,16 +141,20 @@
         @keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fade-out { to { opacity: 0; transform: translateY(-20px); } }
 
+        /* 📱 學生遊戲介面：手機預設排版 */
+        #screen-game { width: 100%; max-width: 1200px; padding: 0; }
+        .game-layout { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .left-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .right-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+
+        /* 🖥️ 學生遊戲介面：平板專屬雙欄排版 */
         @media (min-width: 768px) {
             .card { max-width: 800px; padding: 40px; margin: 20px auto;}
             h1 { font-size: 32px; }
-            #question-text { font-size: 36px; margin: 15px 0; line-height: 1.4; color: #1565C0;}
-            .option-btn { font-size: 26px; padding: 25px; min-height: 100px;}
             .boss-image { width: 250px; height: 250px; }
             .projector-boss { width: 400px; height: 400px; }
             .hp-text { font-size: 24px; }
             .hp-bar-bg { height: 35px; }
-            #timer-display { font-size: 36px; padding: 15px 30px; }
             .shop-item { font-size: 18px; padding: 15px; }
             .btn-item { font-size: 20px; padding: 15px; }
             .gold-text { font-size: 26px; }
@@ -167,6 +171,28 @@
             .f1-car-wrapper { font-size: 60px; }
             .f1-lane { height: 80px; }
             .nitro-fire { font-size: 40px; left: -35px; top: 20px; }
+
+            /* ✨ 核心：平板雙欄介面 */
+            #screen-game:not(.hidden) { display: flex; flex-direction: column; height: calc(100vh - 40px); overflow: hidden; }
+            .game-layout { flex-direction: row; flex: 1; overflow: hidden; align-items: stretch;}
+            
+            /* 左欄 (主畫面+商城) */
+            .left-panel { width: 35%; min-width: 320px; max-width: 450px; height: 100%; overflow-y: auto; padding-right: 5px; }
+            .left-panel::-webkit-scrollbar { width: 6px; }
+            .left-panel::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
+            .left-panel .card { margin: 0; width: 100%; max-width: none; padding: 20px; }
+            
+            /* 右欄 (題目+作答選項) */
+            .right-panel { flex: 1; height: 100%; display: flex; flex-direction: column; }
+            #quiz-content-area { display: flex; flex-direction: column; height: 100%; }
+            #timer-card { flex-shrink: 0; margin: 0; padding: 20px;}
+            #question-text { font-size: 40px; margin: 15px 0; line-height: 1.3; }
+            #timer-display { font-size: 30px; padding: 10px 20px; }
+            
+            /* 作答按鈕延展填滿 */
+            #options-box { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; width: 100%; margin: 15px 0 0 0 !important; max-width: none; }
+            .option-btn { margin: 0; height: 100%; min-height: unset; font-size: 36px; border-radius: 20px; box-shadow: 0 8px 0 rgba(0,0,0,0.2); }
+            .option-btn:active { transform: translateY(8px); box-shadow: none; }
         }
     </style>
 </head>
@@ -337,79 +363,86 @@
         <button style="margin-top: 20px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 結束比賽並觀看戰報</button>
     </div>
 
-    <div id="screen-game" class="screen-page hidden" style="width: 100%; padding: 0;">
-        
-        <div id="ui-boss-zone" class="card" style="margin-top: 0;">
-            <h2 id="display-player-name-boss" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
-            <div id="student-hit-container" style="display:inline-block; padding:5px;"><img id="student-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image"></div>
-            <div class="hp-text boss-color" id="student-boss-hp-text">👿 魔王血量</div>
-            <div class="hp-bar-bg"><div id="student-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
-        </div>
-
-        <div id="ui-bomb-zone" class="card hidden" style="margin-top: 0; border-color: #e21b3c; background: #ffebee;">
-            <h2 id="display-player-name-bomb" style="margin-top:0; color: #c62828;">特務 </h2>
-            <div style="font-size: 60px; margin: 10px 0;">💣</div>
-            <div style="font-size: 20px; font-weight: bold; color: #c62828; margin-bottom: 10px;">⚠️ 快解題！答對加時，答錯扣秒！</div>
-            <div class="hp-text" id="student-bomb-progress-text" style="color: #00838F;">✂️ 個人進度: 0 / 10</div>
-        </div>
-
-        <div id="ui-f1-zone" class="card hidden" style="margin-top: 0;">
-            <h2 id="display-player-name-f1" style="margin-top:0;">車手 </h2>
-            <div style="font-size: 60px; margin: 10px 0;">🏎️</div>
-            <div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;" id="f1-team-cheer">⛽ 努力答題，幫車隊衝刺！</div>
-            <div class="hp-text" id="student-f1-progress-text">🏆 車隊里程: 0 m</div>
-        </div>
-        
-        <div class="card" id="hp-exp-zone" style="margin-top: 10px;">
-            <div>
-                <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
-                <div class="hp-bar-bg" style="margin-bottom: 10px;"><div id="player-hp-fill" class="hp-bar-fill player-fill"></div></div>
-                <div class="exp-text" id="ui-exp-text">🌟 EXP: 0 / 30</div>
-                <div class="hp-bar-bg" style="height: 10px; border: 1px solid #ccc; margin-bottom: 10px;"><div id="ui-exp-fill" class="exp-fill"></div></div>
-            </div>
-            <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
-                <span class="gold-text" id="ui-gold-text">💰 金幣: 0 G</span>
-                <span class="combo-text hidden" id="ui-combo-text">🔥 3 連擊!</span>
-            </div>
-            <div class="buff-container" id="ui-buff-container"></div>
-        </div>
-        
-        <div id="quiz-content-area" style="width: 100%;">
-            <div class="card" id="timer-card" style="margin-top: 10px; padding-bottom: 10px;">
-                <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
-                <h2 id="question-text" style="margin: 0;">載入中...</h2>
-            </div>
+    <div id="screen-game" class="screen-page hidden">
+        <div class="game-layout">
             
-            <div class="options-container" id="options-box" style="width: 95%; max-width: 800px; margin: 10px auto;">
-                <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
-                <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
-                <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
-                <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
-            </div>
-        </div>
+            <div class="left-panel">
+                <div id="ui-boss-zone" class="card">
+                    <h2 id="display-player-name-boss" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
+                    <div id="student-hit-container" style="display:inline-block; padding:5px;"><img id="student-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image"></div>
+                    <div class="hp-text boss-color" id="student-boss-hp-text">👿 魔王血量</div>
+                    <div class="hp-bar-bg"><div id="student-boss-hp-fill" class="hp-bar-fill boss-fill"></div></div>
+                </div>
 
-        <div class="card" style="margin-top: 10px; background: #fff8e1; border-color: #ffc107;">
-            <h3 style="margin: 0 0 5px 0; color: #f57f17;">🏪 魔法商城</h3>
-            
-            <div id="shop-boss" class="shop-container">
-                <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 20)">⚔️ 會心一擊<br><span style="font-size:12px; color:#f57f17;">(20G)</span></button>
-                <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 30)">🛡️ 絕對防禦<br><span style="font-size:12px; color:#f57f17;">(30G)</span></button>
-            </div>
-            
-            <div id="shop-bomb" class="shop-container hidden">
-                <button class="shop-item" id="btn-shop-timeadd" onclick="buyItem('timeadd', 20)">🕒 時間精華<br><span style="font-size:12px; color:#f57f17;">(+10秒 20G)</span></button>
-                <button class="shop-item" id="btn-shop-bombshield" onclick="buyItem('bombshield', 30)">🛡️ 防爆盾牌<br><span style="font-size:12px; color:#f57f17;">(擋扣秒 30G)</span></button>
-                <button class="shop-item" id="btn-shop-skip" onclick="buyItem('skip', 40)">✂️ 萬能剪刀<br><span style="font-size:12px; color:#f57f17;">(秒殺此題 40G)</span></button>
+                <div id="ui-bomb-zone" class="card hidden" style="border-color: #e21b3c; background: #ffebee;">
+                    <h2 id="display-player-name-bomb" style="margin-top:0; color: #c62828;">特務 </h2>
+                    <div style="font-size: 60px; margin: 10px 0;">💣</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #c62828; margin-bottom: 10px;">⚠️ 快解題！答對加時，答錯扣秒！</div>
+                    <div class="hp-text" id="student-bomb-progress-text" style="color: #00838F;">✂️ 個人進度: 0 / 10</div>
+                </div>
+
+                <div id="ui-f1-zone" class="card hidden">
+                    <h2 id="display-player-name-f1" style="margin-top:0;">車手 </h2>
+                    <div style="font-size: 60px; margin: 10px 0;">🏎️</div>
+                    <div style="font-size: 20px; font-weight: bold; margin-bottom: 10px;" id="f1-team-cheer">⛽ 努力答題，幫車隊衝刺！</div>
+                    <div class="hp-text" id="student-f1-progress-text">🏆 車隊里程: 0 m</div>
+                </div>
+                
+                <div class="card" id="hp-exp-zone">
+                    <div>
+                        <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
+                        <div class="hp-bar-bg" style="margin-bottom: 10px;"><div id="player-hp-fill" class="hp-bar-fill player-fill"></div></div>
+                        <div class="exp-text" id="ui-exp-text">🌟 EXP: 0 / 30</div>
+                        <div class="hp-bar-bg" style="height: 10px; border: 1px solid #ccc; margin-bottom: 10px;"><div id="ui-exp-fill" class="exp-fill"></div></div>
+                    </div>
+                    <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
+                        <span class="gold-text" id="ui-gold-text">💰 金幣: 0 G</span>
+                        <span class="combo-text hidden" id="ui-combo-text">🔥 3 連擊!</span>
+                    </div>
+                    <div class="buff-container" id="ui-buff-container"></div>
+                </div>
+
+                <div class="card" style="background: #fff8e1; border-color: #ffc107;">
+                    <h3 style="margin: 0 0 5px 0; color: #f57f17;">🏪 魔法商城</h3>
+                    
+                    <div id="shop-boss" class="shop-container">
+                        <button class="shop-item" id="btn-shop-dmg" onclick="buyItem('dmg', 20)">⚔️ 會心一擊<br><span style="font-size:12px; color:#f57f17;">(20G)</span></button>
+                        <button class="shop-item" id="btn-shop-shield" onclick="buyItem('shield', 30)">🛡️ 絕對防禦<br><span style="font-size:12px; color:#f57f17;">(30G)</span></button>
+                    </div>
+                    
+                    <div id="shop-bomb" class="shop-container hidden">
+                        <button class="shop-item" id="btn-shop-timeadd" onclick="buyItem('timeadd', 20)">🕒 時間精華<br><span style="font-size:12px; color:#f57f17;">(+10秒 20G)</span></button>
+                        <button class="shop-item" id="btn-shop-bombshield" onclick="buyItem('bombshield', 30)">🛡️ 防爆盾牌<br><span style="font-size:12px; color:#f57f17;">(擋扣秒 30G)</span></button>
+                        <button class="shop-item" id="btn-shop-skip" onclick="buyItem('skip', 40)">✂️ 萬能剪刀<br><span style="font-size:12px; color:#f57f17;">(秒殺此題 40G)</span></button>
+                    </div>
+
+                    <div id="shop-f1" class="shop-container hidden">
+                        <button class="shop-item" id="btn-shop-nitro" onclick="buyItem('nitro', 20)">🔥 氮氣加速<br><span style="font-size:12px; color:#f57f17;">(狂飆 20G)</span></button>
+                        <button class="shop-item" id="btn-shop-f1shield" onclick="buyItem('f1shield', 30)">🛡️ 車體護盾<br><span style="font-size:12px; color:#f57f17;">(防倒退 30G)</span></button>
+                        <button class="shop-item" id="btn-shop-banana" onclick="buyItem('banana', 40)">🍌 香蕉皮<br><span style="font-size:12px; color:#f57f17;">(絆倒敵方 40G)</span></button>
+                        <button class="shop-item" id="btn-shop-blueshell" onclick="buyItem('blueshell', 60)">🐢 藍色龜殼<br><span style="font-size:12px; color:#f57f17;">(轟炸第一 60G)</span></button>
+                    </div>
+
+                    <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5; margin-top:5px;">🎒 喝生命藥水 (擁有: 0瓶)</button>
+                </div>
             </div>
 
-            <div id="shop-f1" class="shop-container hidden">
-                <button class="shop-item" id="btn-shop-nitro" onclick="buyItem('nitro', 20)">🔥 氮氣加速<br><span style="font-size:12px; color:#f57f17;">(狂飆 20G)</span></button>
-                <button class="shop-item" id="btn-shop-f1shield" onclick="buyItem('f1shield', 30)">🛡️ 車體護盾<br><span style="font-size:12px; color:#f57f17;">(防倒退 30G)</span></button>
-                <button class="shop-item" id="btn-shop-banana" onclick="buyItem('banana', 40)">🍌 香蕉皮<br><span style="font-size:12px; color:#f57f17;">(絆倒第一 40G)</span></button>
-                <button class="shop-item" id="btn-shop-blueshell" onclick="buyItem('blueshell', 60)">🐢 藍色龜殼<br><span style="font-size:12px; color:#f57f17;">(轟炸第一 60G)</span></button>
+            <div class="right-panel">
+                <div id="quiz-content-area">
+                    <div class="card" id="timer-card">
+                        <div id="timer-display">⏳ 剩餘時間：-- 秒</div>
+                        <h2 id="question-text">載入中...</h2>
+                    </div>
+                    
+                    <div class="options-container" id="options-box">
+                        <button class="option-btn" id="btn-0" onclick="checkAnswer(0)">A</button>
+                        <button class="option-btn" id="btn-1" onclick="checkAnswer(1)">B</button>
+                        <button class="option-btn" id="btn-2" onclick="checkAnswer(2)">C</button>
+                        <button class="option-btn" id="btn-3" onclick="checkAnswer(3)">D</button>
+                    </div>
+                </div>
             </div>
 
-            <button id="btn-potion" class="btn-item" onclick="usePotion()" disabled style="opacity: 0.5;">🎒 喝生命藥水 (擁有: 0瓶)</button>
         </div>
     </div>
 
@@ -610,7 +643,6 @@
             });
         }
 
-        // 🌟 新增：刪除雲端題庫
         function deleteQuizBank() {
             const selectedName = document.getElementById('quiz-load-select').value;
             if (!selectedName) return alert("請先選擇要刪除的題庫！");
@@ -619,7 +651,6 @@
             }
         }
 
-        // 🌟 修正：移除靜態輸入的目標，改為將變數與題目存入遊戲
         function createGame() {
             const pin = document.getElementById('teacher-pin').value.trim();
             const type = document.getElementById('teacher-game-type').value;
@@ -630,26 +661,36 @@
 
             let gameData = { pinCode: pin, gameType: type, questions: parsedQuiz, status: 'waiting', players: {}, questionStats: {} };
 
-            // 基礎設定寫入
             gameData.timeLimit = parseInt(document.getElementById('teacher-time-limit').value || 60);
+
             if (type === 'boss_battle') {
+                let expP = parseInt(document.getElementById('teacher-expected-players').value || 24);
+                let autoBossHP = Math.max(1000, expP * parsedQuiz.length * 50); 
+                gameData.bossTotalHP = autoBossHP;
+                gameData.currentBossHP = autoBossHP; 
                 gameData.bossEnraged = false; gameData.classEnergy = 0; gameData.ultimateFired = false;
             } else if (type === 'bomb_defusal') {
+                let expP = parseInt(document.getElementById('teacher-bomb-players').value || 24);
                 gameData.bombMinutes = parseInt(document.getElementById('teacher-bomb-time').value || 4);
-                gameData.wiresCut = 0;
+                gameData.targetWires = expP * parsedQuiz.length; gameData.wiresCut = 0;
             } else if (type === 'f1_racing') {
+                let actualPlayerCount = parseInt(document.getElementById('teacher-player-count').innerText.replace(/\D/g, '')) || 24;
+                let teamSize = Math.max(1, Math.floor(actualPlayerCount / 4));
+                let finalDist = Math.max(1000, teamSize * parsedQuiz.length * 100);
+                gameData.f1TargetDist = finalDist;
                 gameData.f1Teams = { red: { progress: 0, isNitro: false }, blue: { progress: 0, isNitro: false }, yellow: { progress: 0, isNitro: false }, green: { progress: 0, isNitro: false } };
             }
 
             gameRef.set(gameData).then(() => {
                 currentRole = "projector"; currentGameType = type; isGameActive = false; announcedTeams = {};
+                if(type === 'boss_battle') { bossTotalHP = gameData.bossTotalHP; bossHP = gameData.currentBossHP; }
+                if(type === 'f1_racing') { f1TargetDist = gameData.f1TargetDist; }
                 document.getElementById('lobby-pin-display').innerText = `👉 PIN：${pin}`;
                 const qrContainer = document.getElementById("qrcode"); qrContainer.innerHTML = ""; new QRCode(qrContainer, { text: window.location.href.split('?')[0] + "?pin=" + pin, width: 200, height: 200 });
                 switchScreen('screen-teacher-lobby'); listenToPlayersJoined(); 
             });
         }
 
-        // 🌟 修正：老師端大廳監聽，加入踢人按鈕
         function listenToPlayersJoined() {
             gameRef.child('players').on('value', snap => {
                 let players = snap.val() || {};
@@ -672,14 +713,12 @@
             });
         }
 
-        // 🌟 新增：踢出學生的功能
         function kickPlayer(playerId) {
             if(confirm("確定要將這名勇者踢出大廳嗎？")) {
                 gameRef.child('players').child(playerId).remove();
             }
         }
 
-        // 🌟 修正：老師按下開始遊戲時，動態計算所有難度目標
         function startBattle() { 
             silentUnlockAudio(); 
             gameRef.once('value', snap => {
@@ -691,23 +730,18 @@
                 let updates = { status: 'playing' };
 
                 if (currentGameType === 'boss_battle') {
-                    // 自動算血量: 每人每題可打 50 滴血
                     let finalHp = actualPlayerCount * qCount * 50; 
-                    updates.bossTotalHP = finalHp;
-                    updates.currentBossHP = finalHp;
-                    bossTotalHP = finalHp; bossHP = finalHp; // 老師端本地變數更新
+                    updates.bossTotalHP = finalHp; updates.currentBossHP = finalHp;
+                    bossTotalHP = finalHp; bossHP = finalHp; 
                 } else if (currentGameType === 'bomb_defusal') {
-                    // 自動算炸彈線: 總題數 * 人數
                     updates.targetWires = actualPlayerCount * qCount;
-                    targetWires = updates.targetWires; // 老師端本地變數更新
+                    targetWires = updates.targetWires; 
                     let endTimeMs = Date.now() + (data.bombMinutes * 60 * 1000);
                     updates.bombEndTime = endTimeMs;
                 } else if (currentGameType === 'f1_racing') {
-                    // 自動算里程: 預估隊伍人數 * 題數 * 平均100m
                     let teamSize = Math.max(1, Math.floor(actualPlayerCount / 4));
                     let finalDist = Math.max(1000, teamSize * qCount * 100);
-                    updates.f1TargetDist = finalDist;
-                    f1TargetDist = finalDist; // 老師端本地變數更新
+                    updates.f1TargetDist = finalDist; f1TargetDist = finalDist; 
                 }
 
                 gameRef.update(updates).then(() => { 
@@ -754,7 +788,6 @@
 
                     switchScreen('screen-student-lobby'); listenToGameStart();
                     
-                    // 🌟 新增：監聽自己是否被踢出
                     gameRef.child('players').child(myPlayerId).on('value', playerSnap => {
                         if (!isGameActive && playerSnap.val() === null) {
                             alert("⚠️ 您已被老師移出大廳！");
@@ -766,7 +799,6 @@
             });
         }
 
-        // 🌟 修正：確保學生端讀取動態算出的最新難度目標
         function listenToGameStart() {
             gameRef.on('value', snap => { 
                 let data = snap.val();
@@ -776,7 +808,6 @@
                 if (status === 'playing' && !isGameActive && currentRole === 'student') { 
                     isGameActive = true; currentQuestionIndex = 0; switchScreen('screen-game'); 
                     
-                    // 同步動態計算出的變數
                     if(currentGameType === 'boss_battle') { bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; }
                     if(currentGameType === 'bomb_defusal') { targetWires = data.targetWires; }
                     if(currentGameType === 'f1_racing') { f1TargetDist = data.f1TargetDist; }
@@ -894,7 +925,6 @@
                 }
             } else if (currentGameType === 'f1_racing') {
                 if (currentRole === 'student') {
-                    // 同步更新 UI 上的目標里程數
                     document.getElementById('student-f1-progress-text').innerText = `🏆 車隊里程: ${Math.max(0, myTotalDamage)} / ${f1TargetDist} m`; 
                     setBtnDisabled('btn-shop-nitro', playerGold < 20);
                     setBtnDisabled('btn-shop-banana', playerGold < 40);
@@ -993,7 +1023,7 @@
                                 showProjectorLog(`🏁 恭喜！${teamNames[t]} 率先衝過終點！`, "#FFEB3B", 'f1');
                             }
                         } else if (currentRole === 'student' && myF1Team === t) {
-                            myTotalDamage = prog; // 用作里程緩存顯示
+                            myTotalDamage = prog; 
                             document.getElementById('student-f1-progress-text').innerText = `🏆 車隊里程: ${prog} / ${f1TargetDist} m`;
                         }
                     });
@@ -1063,18 +1093,15 @@
         }
 
         function handleWrongAnswer() {
-            playerCombo = 0; 
-            let sfxHurt = document.getElementById('sfx-hurt'); 
-            let sfxWrong = document.getElementById('sfx-wrong');
+            playerCombo = 0; const sfxHurt = document.getElementById('sfx-hurt'); const sfxWrong = document.getElementById('sfx-wrong');
             if(sfxWrong) { sfxWrong.currentTime = 0; sfxWrong.play().catch(() => {}); }
             
             if (hasBuffShield) {
                 hasBuffShield = false; showCenterPopup("🛡️ 護盾發動！抵擋了錯誤懲罰！", "#4CAF50"); gameRef.child('combatLogs').push({ name: myPlayerName, type: 'shield', timestamp: Date.now() });
             } else {
+                if(sfxHurt) { setTimeout(() => { sfxHurt.currentTime = 0; sfxHurt.play().catch(() => {}); }, 150); }
                 if (currentGameType === 'boss_battle') {
-                    if(sfxHurt) { setTimeout(() => { sfxHurt.currentTime = 0; sfxHurt.play().catch(() => {}); }, 150); }
                     let dmgTaken = isBossEnraged ? 50 : 25; playerHP = Math.max(0, playerHP - dmgTaken); 
-                    // 🌟 嚴格控制：只有怪物圖示會有特效，沒有全螢幕紅光
                     let bossImg = document.getElementById('student-boss-img');
                     if(bossImg) { bossImg.classList.remove('boss-attack'); void bossImg.offsetWidth; bossImg.classList.add('boss-attack'); }
                 } else if (currentGameType === 'bomb_defusal') {
@@ -1095,8 +1122,6 @@
             
             if (idx === quizData[currentQuestionIndex].correctIndex) {
                 playerCombo++; let earnedGold = 10; if (playerCombo >= 3) { earnedGold += 5; } playerGold += earnedGold;
-                
-                // 🌟 強制播放攻擊音效
                 let sfxAtk = document.getElementById('sfx-attack'); if(sfxAtk) { sfxAtk.currentTime=0; sfxAtk.play().catch(()=>{}); }
 
                 if (currentGameType === 'boss_battle') {
