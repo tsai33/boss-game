@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 9.1 (大亂鬥版)</title>
+    <title>勇者學園對戰平台 9.2 (完美除錯版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -134,7 +134,6 @@
         .nitro-fire { position: absolute; left: -25px; top: 15px; font-size: 30px; animation: pulse-fast 0.2s infinite; display: none; }
         .is-nitro .nitro-fire { display: block; }
 
-        /* 🌟 香蕉皮打滑特效 */
         @keyframes spin-car { 100% { transform: rotate(360deg); } }
         .spin-effect { animation: spin-car 0.5s linear 2 !important; }
 
@@ -344,18 +343,10 @@
 
         <div class="f1-track-container">
             <div class="finish-line"></div>
-            <div class="f1-lane">
-                <div id="f1-car-red" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#F44336;">火龍</span></div>
-            </div>
-            <div class="f1-lane">
-                <div id="f1-car-blue" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#2196F3;">冰狼</span></div>
-            </div>
-            <div class="f1-lane">
-                <div id="f1-car-yellow" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#FFEB3B;">雷豹</span></div>
-            </div>
-            <div class="f1-lane">
-                <div id="f1-car-green" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#4CAF50;">風鷹</span></div>
-            </div>
+            <div class="f1-lane"><div id="f1-car-red" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#F44336;">火龍</span></div></div>
+            <div class="f1-lane"><div id="f1-car-blue" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#2196F3;">冰狼</span></div></div>
+            <div class="f1-lane"><div id="f1-car-yellow" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#FFEB3B;">雷豹</span></div></div>
+            <div class="f1-lane"><div id="f1-car-green" class="f1-car-wrapper"><div class="nitro-fire">🔥</div>🏎️ <span class="f1-name-tag" style="color:#4CAF50;">風鷹</span></div></div>
         </div>
 
         <div style="display: flex; justify-content: space-around; margin-top: 10px; font-size: 20px; font-weight: bold;">
@@ -506,6 +497,15 @@
         let timeLeft = 60; let timeLimitSetting = 60; let timerInterval;
         let myPlayerId = ""; let myPlayerName = ""; 
 
+        // 🌟 新增：畫面正中央超強烈的彈出警告系統
+        function showCenterPopup(msg, bgColor) {
+            let popup = document.createElement('div');
+            popup.innerText = msg;
+            popup.style.cssText = `position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:${bgColor}; color:white; padding:20px 40px; font-size:32px; font-weight:bold; border-radius:15px; z-index:9999; text-align:center; white-space:nowrap; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: pulse-fast 0.3s infinite; border: 4px solid white;`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1500);
+        }
+
         function silentUnlockAudio() {
             ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-heal', 'sfx-buy', 'sfx-ultimate', 'sfx-nitro', 'sfx-slip'].forEach(id => {
                 let audio = document.getElementById(id);
@@ -532,7 +532,7 @@
                 document.getElementById('setting-hint').innerText = "💡 系統會決定總共要剪斷幾根線才能拆除炸彈！";
             } else if (type === 'f1_racing') {
                 document.getElementById('setting-f1').classList.remove('hidden');
-                document.getElementById('setting-hint').innerText = "💡 建議里程數：(題數 × 10)。誰先跑到終點誰獲勝！";
+                document.getElementById('setting-hint').innerText = "💡 建議里程數：(題數 × 50)。誰先跑到終點誰獲勝！";
             }
         }
 
@@ -764,13 +764,15 @@
                     document.getElementById('shop-bomb').classList.add('hidden');
                     document.getElementById('shop-f1').classList.add('hidden');
                     document.getElementById('hp-exp-zone').classList.remove('hidden');
-                    document.getElementById('timer-card').classList.remove('hidden');
+                    
+                    // 🌟 修復 2：只隱藏倒數計時，保留整個 timer-card
+                    document.getElementById('timer-display').classList.remove('hidden');
 
                     if (currentGameType === 'bomb_defusal') {
                         document.getElementById('ui-bomb-zone').classList.remove('hidden');
                         document.getElementById('shop-bomb').classList.remove('hidden');
                         document.getElementById('hp-exp-zone').classList.add('hidden'); 
-                        document.getElementById('timer-card').classList.add('hidden'); 
+                        document.getElementById('timer-display').classList.add('hidden'); // 僅隱藏時間文字
                         document.getElementById('display-player-name-bomb').innerText = `特務 ${myPlayerName}`;
                     } else if (currentGameType === 'f1_racing') {
                         document.getElementById('ui-f1-zone').classList.remove('hidden');
@@ -801,49 +803,48 @@
         function buyItem(type, cost) {
             if (playerGold < cost) return;
             
-            // 🌟 處理陷害系道具 (香蕉皮/藍龜殼)
             if (type === 'banana' || type === 'blueshell') {
                 gameRef.child('f1Teams').once('value', snap => {
                     let teams = snap.val();
                     if(!teams) return;
                     let targetTeam = ''; let maxProg = -1;
-                    // 尋找跑最前面且「不是自己」的車隊
                     for(let t in teams) {
-                        if (t !== myF1Team && teams[t].progress > maxProg) {
-                            maxProg = teams[t].progress; targetTeam = t;
-                        }
+                        if (t !== myF1Team && teams[t].progress > maxProg) { maxProg = teams[t].progress; targetTeam = t; }
                     }
                     if (targetTeam) {
-                        playerGold -= cost; // 確定有目標才扣錢
+                        playerGold -= cost;
                         let sfxBuy = document.getElementById('sfx-buy'); if(sfxBuy) { sfxBuy.currentTime = 0; sfxBuy.play().catch(()=>{}); }
                         
-                        let penalty = (type === 'banana') ? 30 : 100;
+                        let penalty = (type === 'banana') ? 100 : 300; // 🌟 陷害懲罰大提升
                         gameRef.child('f1Teams').child(targetTeam).child('progress').transaction(p => Math.max(0, (p||0) - penalty));
                         gameRef.child('combatLogs').push({ name: myPlayerName, type: type, targetTeamName: teamNames[targetTeam], targetTeamId: targetTeam, timestamp: Date.now() });
+                        showCenterPopup(`陷害成功！${teamNames[targetTeam]} 扣里程！`, "#4CAF50");
                         updateRPGUI();
                     } else {
                         alert("⚠️ 目前沒有可陷害的敵方車隊！");
                     }
                 });
-                return; // 非同步處理完畢就離開
+                return;
             }
 
             playerGold -= cost;
             let sfxBuy = document.getElementById('sfx-buy'); if(sfxBuy) { sfxBuy.currentTime = 0; sfxBuy.play().catch(()=>{}); }
 
             if(type === 'dmg') { hasBuffDmg = true; } 
-            else if (type === 'shield' || type === 'bombshield') { hasBuffShield = true; } 
+            else if (type === 'shield' || type === 'bombshield' || type === 'f1shield') { hasBuffShield = true; } 
             else if (type === 'timeadd') {
                 gameRef.child('bombEndTime').transaction(t => t + 10000);
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'timeadd', timestamp: Date.now() });
+                showCenterPopup("🕒 奉獻時間精華！全班 +10 秒！", "#2196F3");
             } 
             else if (type === 'skip') {
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'skip', timestamp: Date.now() });
+                showCenterPopup("✂️ 使用萬能剪刀！秒殺此題！", "#FF9800");
                 checkAnswer(quizData[currentQuestionIndex].correctIndex); return; 
             }
             else if (type === 'nitro') {
                 let sfxNitro = document.getElementById('sfx-nitro'); if(sfxNitro) { sfxNitro.currentTime = 0; sfxNitro.play().catch(()=>{}); }
-                gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 50);
+                gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 150); // 🌟 氮氣加速變 150m
                 gameRef.child('f1Teams').child(myF1Team).child('isNitro').set(true);
                 setTimeout(() => { gameRef.child('f1Teams').child(myF1Team).child('isNitro').set(false); }, 2000);
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'nitro', team: teamNames[myF1Team], timestamp: Date.now() });
@@ -900,6 +901,7 @@
                     document.getElementById('btn-shop-nitro').disabled = (playerGold < 30);
                     document.getElementById('btn-shop-banana').disabled = (playerGold < 40);
                     document.getElementById('btn-shop-blueshell').disabled = (playerGold < 80);
+                    document.getElementById('btn-shop-f1shield').disabled = (playerGold < 40 || hasBuffShield);
                 }
             }
 
@@ -1008,7 +1010,6 @@
                     if (log.type === 'skip') { msg = `✂️ ${log.name} 使用萬能剪刀秒殺一題！`; color = "#FF9800"; }
                     if (log.type === 'nitro') { msg = `🔥 ${log.team} 的 ${log.name} 發動了 氮氣加速！`; color = "#FF5722"; }
                     
-                    // 🌟 陷害大亂鬥廣播與動畫
                     if (log.type === 'banana') { 
                         msg = `🍌 ${log.name} 丟出香蕉皮！${log.targetTeamName} 打滑退後！`; color = "#FFEB3B"; 
                         let sfxSlip = document.getElementById('sfx-slip'); if(sfxSlip) { sfxSlip.currentTime = 0; sfxSlip.play().catch(()=>{}); }
@@ -1073,7 +1074,8 @@
             document.body.classList.add('flash-red'); setTimeout(() => document.body.classList.remove('flash-red'), 300);
             
             if (hasBuffShield) {
-                hasBuffShield = false; alert("🛡️ 防禦發動！抵擋了錯誤懲罰！");
+                hasBuffShield = false; 
+                showCenterPopup("🛡️ 護盾發動！抵擋了錯誤懲罰！", "#4CAF50");
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'shield', timestamp: Date.now() });
             } else {
                 if(sfxHurt) { setTimeout(() => { sfxHurt.currentTime = 0; sfxHurt.play().catch(() => {}); }, 150); }
@@ -1081,10 +1083,11 @@
                     let dmgTaken = isBossEnraged ? 50 : 25; playerHP = Math.max(0, playerHP - dmgTaken); 
                 } else if (currentGameType === 'bomb_defusal') {
                     gameRef.child('bombEndTime').transaction(t => t - 5000);
-                    let warning = document.createElement('div'); warning.innerText = "❌ 剪錯線！全班時間 -5 秒！"; warning.style.cssText = "position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:red; color:white; padding:20px; font-size:30px; border-radius:10px; z-index:999;"; document.body.appendChild(warning); setTimeout(()=>warning.remove(), 1500);
+                    showCenterPopup("❌ 剪錯線！全班時間 -5 秒！", "#D32F2F");
                 } else if (currentGameType === 'f1_racing') {
-                    gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => Math.max(0, (p||0) - 10));
-                    let warning = document.createElement('div'); warning.innerText = "❌ 爆胎！車隊退後 10m！"; warning.style.cssText = "position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:#F44336; color:white; padding:20px; font-size:30px; border-radius:10px; z-index:999;"; document.body.appendChild(warning); setTimeout(()=>warning.remove(), 1500);
+                    // 🌟 F1 答錯倒退 30 m
+                    gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => Math.max(0, (p||0) - 30));
+                    showCenterPopup("❌ 爆胎！車隊退後 30m！", "#D32F2F");
                 }
             }
             
@@ -1103,18 +1106,28 @@
                 if (currentGameType === 'boss_battle') {
                     gameRef.child('classEnergy').transaction(curr => Math.min(100, (curr || 0) + 2));
                     let finalDmg = 40 + ((playerLevel - 1) * 10); 
-                    if (hasBuffDmg) { finalDmg *= 3; hasBuffDmg = false; gameRef.child('combatLogs').push({ name: myPlayerName, type: 'critical', timestamp: Date.now() }); setTimeout(() => alert("💥 會心一擊！"), 100); }
+                    if (hasBuffDmg) { 
+                        finalDmg *= 3; hasBuffDmg = false; 
+                        gameRef.child('combatLogs').push({ name: myPlayerName, type: 'critical', timestamp: Date.now() }); 
+                        showCenterPopup("💥 會心一擊！傷害 3 倍！", "#FF9800"); 
+                    }
                     gameRef.child('currentBossHP').set(Math.max(0, bossHP - finalDmg));
                     myTotalDamage += finalDmg;
                     
                     playerExp += 10; let expNeeded = playerLevel * 30;
-                    if (playerExp >= expNeeded) { playerLevel++; playerExp -= expNeeded; let sfxLvl = document.getElementById('sfx-levelup'); if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); } document.body.classList.add('flash-gold'); setTimeout(() => document.body.classList.remove('flash-gold'), 500); }
+                    if (playerExp >= expNeeded) { 
+                        playerLevel++; playerExp -= expNeeded; let sfxLvl = document.getElementById('sfx-levelup'); if(sfxLvl) { sfxLvl.currentTime = 0; sfxLvl.play().catch(()=>{}); } 
+                        document.body.classList.add('flash-gold'); setTimeout(() => document.body.classList.remove('flash-gold'), 500); 
+                    } else {
+                        document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
+                    }
                 } else if (currentGameType === 'bomb_defusal') {
                     gameRef.child('bombEndTime').transaction(t => t + 3000);
                     gameRef.child('wiresCut').transaction(w => (w || 0) + 1);
                     document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
                 } else if (currentGameType === 'f1_racing') {
-                    gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 15);
+                    // 🌟 F1 答對前進 50 m
+                    gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 50);
                     document.body.classList.add('flash-green'); setTimeout(() => document.body.classList.remove('flash-green'), 300);
                 }
 
