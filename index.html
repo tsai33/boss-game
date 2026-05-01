@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 14.0 (極致手感版)</title>
+    <title>勇者學園對戰平台 15.0 (流暢無閃光版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -24,9 +24,6 @@
             overflow-x: hidden;
         }
 
-        /* 全螢幕紅光僅限魔王攻擊時使用 */
-        body.flash-red::after { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 0, 0, 0.6); z-index: 999999; pointer-events: none; }
-        
         .card { background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); width: 95%; max-width: 600px; margin: 10px auto; border: 2px solid rgba(255,255,255,0.8); position: relative;}
         .hidden { display: none !important; }
         
@@ -81,13 +78,12 @@
         #btn-2 { background-color: #d89e00; border-bottom: 5px solid #9e7400;} 
         #btn-3 { background-color: #26890c; border-bottom: 5px solid #1a5e08;} 
         
-        /* 🌟 答錯時：正確選項變成綠色並左右晃動的特效 */
+        /* 🌟 答錯時正確選項的晃動特效 (不變色、不淡化) */
         @keyframes shake-option {
             0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-10px); }
-            40%, 80% { transform: translateX(10px); }
+            20%, 60% { transform: translateX(-15px); }
+            40%, 80% { transform: translateX(15px); }
         }
-        .btn-correct-highlight { background-color: #4CAF50 !important; color: white !important; border-bottom: 5px solid #2E7D32 !important; box-shadow: 0 0 20px #4CAF50 !important; z-index: 10; }
         .btn-shake { animation: shake-option 0.4s ease-in-out !important; }
 
         .qr-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; margin: 20px 0; }
@@ -148,19 +144,6 @@
         @keyframes pulse-fast { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* 🌟 新增：老師分析清單特效與排版 */
-        .stat-item { background: #f9f9f9; border: 2px solid #ccc; padding: 15px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; text-align: left; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
-        .stat-item:hover { border-color: #2196F3; }
-        .stat-item.expanded { transform: scale(1.03); background: #e3f2fd; border-color: #1565C0; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 10; position: relative; }
-        .stat-item.expanded strong { font-size: 24px !important; color: #1565C0; }
-        .stat-item.expanded .q-option { font-size: 20px !important; padding: 10px; }
-        .stat-item.expanded .stat-bar-text { font-size: 18px !important; }
-        .q-detail-box { display: none; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
-        .q-option { padding: 5px; margin: 3px 0; border-radius: 5px; background: #eee; font-size: 16px; transition: 0.3s;}
-        .q-correct { background: #C8E6C9; border-left: 5px solid #4CAF50; font-weight: bold; }
-        .stat-bar-bg { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-top: 5px; border: 1px solid #ccc; }
-        .stat-bar-fill { height: 100%; background: #e21b3c; }
-
         /* 📱 學生遊戲介面：手機預設排版 */
         #screen-game { width: 100%; max-width: 1200px; padding: 0; }
         .game-layout { display: flex; flex-direction: column; gap: 15px; width: 100%; }
@@ -198,7 +181,7 @@
             #screen-game:not(.hidden) { display: flex; flex-direction: column; height: calc(100vh - 40px); overflow: hidden; }
             .game-layout { flex-direction: row; flex: 1; overflow: hidden; align-items: stretch; gap: 20px;}
             
-            /* 左欄 (主畫面+商城+狀態) */
+            /* 🌟 調整：左欄 (主畫面 -> 商城 -> 狀態) */
             .left-panel { width: 35%; min-width: 320px; max-width: 450px; height: 100%; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 15px;}
             .left-panel::-webkit-scrollbar { width: 6px; }
             .left-panel::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
@@ -228,7 +211,6 @@
     <audio id="sfx-ultimate" src="https://actions.google.com/sounds/v1/explosions/big_explosion.ogg" preload="auto"></audio>
     <audio id="sfx-nitro" src="https://actions.google.com/sounds/v1/transportation/car_pass_by.ogg" preload="auto"></audio>
     <audio id="sfx-slip" src="https://actions.google.com/sounds/v1/cartoon/slip_and_crash.ogg" preload="auto"></audio>
-    <audio id="sfx-defuse" src="https://actions.google.com/sounds/v1/science_fiction/robot_blip.ogg" preload="auto"></audio>
 
     <div id="screen-home" class="screen-page card">
         <h1>🎮 勇者學園對戰平台</h1>
@@ -421,7 +403,7 @@
                     </div>
 
                     <div id="shop-f1" class="shop-container hidden">
-                        <button class="shop-item" id="btn-shop-nitro" onclick="buyItem('nitro', 20)">🔥 氮氣加速<br><span style="font-size:12px; color:#f57f17;">(狂飆 20G)</span></button>
+                        <button class="shop-item" id="btn-shop-nitro" onclick="buyItem('nitro', 20)">🔥 氮氣加速<br><span style="font-size:12px; color:#f57f17;">(狂飆300m 20G)</span></button>
                         <button class="shop-item" id="btn-shop-f1shield" onclick="buyItem('f1shield', 30)">🛡️ 車體護盾<br><span style="font-size:12px; color:#f57f17;">(防倒退 30G)</span></button>
                         <button class="shop-item" id="btn-shop-banana" onclick="buyItem('banana', 40)">🍌 香蕉皮<br><span style="font-size:12px; color:#f57f17;">(絆倒第一 40G)</span></button>
                         <button class="shop-item" id="btn-shop-blueshell" onclick="buyItem('blueshell', 60)">🐢 藍色龜殼<br><span style="font-size:12px; color:#f57f17;">(轟炸第一 60G)</span></button>
@@ -480,7 +462,7 @@
                 <ul class="summary-list" id="help-list"></ul>
             </div>
         </div>
-        <h2 style="text-align: left; margin-top: 30px;">📝 題目錯誤率分析 (點擊可放大檢視)</h2>
+        <h2 style="text-align: left; margin-top: 30px;">📝 題目錯誤率分析</h2>
         <div id="question-stats-list"></div>
     </div>
 
@@ -491,12 +473,6 @@
         </div>
         <h3 style="color: #4CAF50; text-align: left;">🏆 班級優秀前五名</h3>
         <ul class="summary-list" id="student-mvp-list" style="text-align: left;"></ul>
-
-        <!-- 錯誤題目檢視區塊 -->
-        <div id="student-wrong-review-container" class="hidden" style="margin-top: 20px; border-top: 2px dashed #ccc; padding-top: 20px;">
-            <h3 style="color: #e21b3c; text-align: left; margin-bottom: 10px; font-size: 26px;">📝 你的錯誤題目檢視</h3>
-            <div id="student-wrong-list" style="max-height: 500px; overflow-y: auto; padding-right: 5px;"></div>
-        </div>
     </div>
 
     <script>
@@ -533,36 +509,35 @@
         let isGameActive = false; 
         let announcedTeams = {}; 
 
-        let myWrongAnswers = [];
-
-        const setBtnDisabled = (id, condition) => {
-            const btn = document.getElementById(id);
-            if (btn) btn.disabled = condition;
-        };
-
-        // 🌟 絕對安全的音效播放函數
+        // 🌟 絕對強制的音效播放系統 (不再有靜音播放的 BUG)
         function playSound(id) {
             let audio = document.getElementById(id);
             if (audio) {
+                audio.pause();
                 audio.currentTime = 0;
-                audio.play().catch(e => console.log("音效未解鎖:", e));
+                audio.volume = 1;
+                audio.play().catch(e => console.log(e));
             }
         }
 
-        function silentUnlockAudio() {
-            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-buy', 'sfx-ultimate', 'sfx-nitro', 'sfx-slip', 'sfx-defuse'].forEach(id => {
+        // 🌟 點擊畫面任意處時，讓瀏覽器載入音訊，但不預先播放
+        function unlockAudioOnInteraction() {
+            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-buy', 'sfx-ultimate', 'sfx-nitro', 'sfx-slip'].forEach(id => {
                 let audio = document.getElementById(id);
-                if (audio) { audio.volume = 0; audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio.volume = 1; }).catch(() => {}); }
+                if (audio) { audio.load(); }
             });
+            document.removeEventListener('click', unlockAudioOnInteraction);
+            document.removeEventListener('touchstart', unlockAudioOnInteraction);
         }
+        document.addEventListener('click', unlockAudioOnInteraction);
+        document.addEventListener('touchstart', unlockAudioOnInteraction);
 
-        // 🌟 畫面中央的快閃提示特效
-        function showCenterPopup(msg, bgColor, duration = 1000) {
+        function showCenterPopup(msg, bgColor, duration = 1500) {
             let popup = document.createElement('div');
             popup.innerText = msg;
-            popup.style.cssText = `position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); background:${bgColor}; color:white; padding:20px 40px; font-size:36px; font-weight:bold; border-radius:15px; z-index:999999; text-align:center; white-space:pre-wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 4px solid white; pointer-events: none; transition: 0.3s;`;
+            popup.style.cssText = `position:fixed; top:30%; left:50%; transform:translate(-50%,-50%); background:${bgColor}; color:white; padding:20px 40px; font-size:28px; font-weight:bold; border-radius:15px; z-index:999999; text-align:center; white-space:pre-wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: pulse-fast 0.3s infinite; border: 4px solid white; pointer-events: none;`;
             document.body.appendChild(popup);
-            setTimeout(() => { popup.style.opacity = '0'; setTimeout(() => popup.remove(), 300); }, duration);
+            setTimeout(() => popup.remove(), duration);
         }
 
         function switchScreen(screenId) {
@@ -576,7 +551,7 @@
             switchScreen('screen-teacher');
         }
 
-        function toggleGameSettings() {}
+        function toggleGameSettings() { }
 
         function verifyTeacherPassword() {
             const pwdInput = document.getElementById('teacher-pwd-input');
@@ -674,29 +649,43 @@
         function deleteQuizBank() {
             const selectedName = document.getElementById('quiz-load-select').value;
             if (!selectedName) return alert("請先選擇要刪除的題庫！");
-            if (confirm(`確定要永久刪除題庫「${selectedName}」嗎？`)) { db.ref('SavedQuizzes/' + selectedName).remove().then(() => { alert(`✅ 已刪除題庫：${selectedName}`); loadQuizList(); }); }
+            if (confirm(`確定要永久刪除題庫「${selectedName}」嗎？`)) {
+                db.ref('SavedQuizzes/' + selectedName).remove().then(() => { alert(`✅ 已刪除題庫：${selectedName}`); loadQuizList(); });
+            }
         }
 
         function createGame() {
             const pin = document.getElementById('teacher-pin').value.trim();
             const type = document.getElementById('teacher-game-type').value;
             const parsedQuiz = getParsedQuizFromUI(); 
-            if(!pin || parsedQuiz.length === 0) { alert("⚠️ 無法發布！請先在下方「📝 編輯題目」區塊，至少新增或匯入一道題目！"); return; }
+            
+            if(!pin || parsedQuiz.length === 0) { 
+                alert("⚠️ 無法發布！請先在下方「📝 編輯題目」區塊，至少新增或匯入一道題目！"); 
+                return; 
+            }
             
             gameRef.child('combatLogs').remove();
+
             let gameData = { pinCode: pin, gameType: type, questions: parsedQuiz, status: 'waiting', players: {}, questionStats: {} };
+
             gameData.timeLimit = parseInt(document.getElementById('teacher-time-limit').value || 60);
 
-            if (type === 'boss_battle') { gameData.bossEnraged = false; gameData.classEnergy = 0; gameData.ultimateFired = false; } 
-            else if (type === 'bomb_defusal') { gameData.wiresCut = 0; } 
-            else if (type === 'f1_racing') { gameData.f1Teams = { red: { progress: 0, isNitro: false }, blue: { progress: 0, isNitro: false }, yellow: { progress: 0, isNitro: false }, green: { progress: 0, isNitro: false } }; }
+            if (type === 'boss_battle') {
+                gameData.bossEnraged = false; gameData.classEnergy = 0; gameData.ultimateFired = false;
+            } else if (type === 'bomb_defusal') {
+                gameData.wiresCut = 0;
+            } else if (type === 'f1_racing') {
+                gameData.f1Teams = { red: { progress: 0, isNitro: false }, blue: { progress: 0, isNitro: false }, yellow: { progress: 0, isNitro: false }, green: { progress: 0, isNitro: false } };
+            }
 
             gameRef.set(gameData).then(() => {
                 currentRole = "projector"; currentGameType = type; isGameActive = false; announcedTeams = {};
                 document.getElementById('lobby-pin-display').innerText = `👉 PIN：${pin}`;
                 const qrContainer = document.getElementById("qrcode"); qrContainer.innerHTML = ""; new QRCode(qrContainer, { text: window.location.href.split('?')[0] + "?pin=" + pin, width: 200, height: 200 });
                 switchScreen('screen-teacher-lobby'); listenToPlayersJoined(); 
-            }).catch(e => { alert("⚠️ 資料庫寫入失敗，請檢查網路狀態！"); });
+            }).catch(e => {
+                alert("⚠️ 資料庫寫入失敗，請檢查網路狀態！");
+            });
         }
 
         function listenToPlayersJoined() {
@@ -705,51 +694,71 @@
                 document.getElementById('teacher-player-count').innerText = `已加入：${Object.keys(players).length} 人`;
                 let html = "";
                 for (let pId in players) {
-                    let p = players[pId]; let colorCode = '#2196f3';
+                    let p = players[pId];
+                    let colorCode = '#2196f3';
                     if(p.f1Team === 'red') colorCode = '#F44336';
                     if(p.f1Team === 'yellow') colorCode = '#FBC02D';
                     if(p.f1Team === 'green') colorCode = '#4CAF50';
-                    if(currentRole === 'projector') { html += `<span class="player-tag player-tag-kick" style="background:${colorCode};" onclick="kickPlayer('${pId}')" title="點擊踢出學生">${p.name} ✖</span>`; } 
-                    else { html += `<span class="player-tag" style="background:${colorCode};">${p.name}</span>`; }
+                    
+                    if(currentRole === 'projector') {
+                        html += `<span class="player-tag player-tag-kick" style="background:${colorCode};" onclick="kickPlayer('${pId}')" title="點擊踢出學生">${p.name} ✖</span>`;
+                    } else {
+                        html += `<span class="player-tag" style="background:${colorCode};">${p.name}</span>`;
+                    }
                 }
                 document.getElementById('teacher-player-names').innerHTML = html;
             });
         }
 
-        function kickPlayer(playerId) { if(confirm("確定要將這名勇者踢出大廳嗎？")) { gameRef.child('players').child(playerId).remove(); } }
+        function kickPlayer(playerId) {
+            if(confirm("確定要將這名勇者踢出大廳嗎？")) {
+                gameRef.child('players').child(playerId).remove();
+            }
+        }
 
         function startBattle() { 
-            silentUnlockAudio(); 
             gameRef.once('value', snap => {
-                let data = snap.val(); if(!data) return;
+                let data = snap.val();
+                if(!data) return;
+                
                 let actualPlayerCount = data.players ? Object.keys(data.players).length : 1;
                 let qCount = data.questions ? data.questions.length : 10;
                 let updates = { status: 'playing' };
 
                 if (currentGameType === 'boss_battle') {
                     let finalHp = actualPlayerCount * qCount * 50; 
-                    updates.bossTotalHP = finalHp; updates.currentBossHP = finalHp; bossTotalHP = finalHp; bossHP = finalHp; 
+                    updates.bossTotalHP = finalHp; updates.currentBossHP = finalHp;
+                    bossTotalHP = finalHp; bossHP = finalHp; 
                 } else if (currentGameType === 'bomb_defusal') {
-                    updates.targetWires = actualPlayerCount * qCount; targetWires = updates.targetWires; 
-                    updates.bombEndTime = Date.now() + (4 * 60 * 1000);
+                    updates.targetWires = actualPlayerCount * qCount;
+                    targetWires = updates.targetWires; 
+                    let endTimeMs = Date.now() + (4 * 60 * 1000);
+                    updates.bombEndTime = endTimeMs;
                 } else if (currentGameType === 'f1_racing') {
                     let teamSize = Math.max(1, Math.floor(actualPlayerCount / 4));
-                    updates.f1TargetDist = Math.max(1000, Math.floor(teamSize * qCount * 100 * 0.8)); f1TargetDist = updates.f1TargetDist; 
+                    let finalDist = Math.max(1000, Math.floor(teamSize * qCount * 100 * 0.8));
+                    updates.f1TargetDist = finalDist; f1TargetDist = finalDist; 
                 }
 
                 gameRef.update(updates).then(() => { 
-                    if (currentGameType === 'bomb_defusal') { switchScreen('screen-projector-bomb'); document.getElementById('projector-leaderboard-bomb').classList.remove('hidden'); } 
-                    else if (currentGameType === 'f1_racing') { switchScreen('screen-projector-f1'); updateRPGUI(); } 
-                    else { switchScreen('screen-projector-boss'); document.getElementById('projector-leaderboard-boss').classList.remove('hidden'); updateRPGUI(); }
+                    if (currentGameType === 'bomb_defusal') {
+                        switchScreen('screen-projector-bomb'); document.getElementById('projector-leaderboard-bomb').classList.remove('hidden');
+                    } else if (currentGameType === 'f1_racing') {
+                        switchScreen('screen-projector-f1'); updateRPGUI();
+                    } else {
+                        switchScreen('screen-projector-boss'); document.getElementById('projector-leaderboard-boss').classList.remove('hidden'); updateRPGUI(); 
+                    }
                     startGameListener(); 
                 });
             });
         }
 
-        window.onload = function() { const urlPin = new URLSearchParams(window.location.search).get('pin'); if (urlPin) { document.getElementById('student-pin').value = urlPin; switchScreen('screen-login'); } }
+        window.onload = function() {
+            const urlPin = new URLSearchParams(window.location.search).get('pin');
+            if (urlPin) { document.getElementById('student-pin').value = urlPin; switchScreen('screen-login'); }
+        }
 
         function joinLobby() {
-            silentUnlockAudio();
             const inputPin = document.getElementById('student-pin').value.trim();
             const playerName = document.getElementById('student-name').value.trim();
             if(!inputPin || !playerName) return;
@@ -759,28 +768,41 @@
                     currentRole = "student"; currentGameType = data.gameType || 'boss_battle'; quizData = data.questions; 
                     playerGold = 0; playerCombo = 0; hasBuffDmg = false; hasBuffShield = false; myTotalDamage = 0; myCorrectCount = 0; myWrongCount = 0;
                     myPlayerName = playerName; myPlayerId = 'user_' + Date.now() + Math.floor(Math.random()*1000);
-                    myWrongAnswers = []; 
-
                     let playerData = { name: playerName, correct: 0, wrong: 0, damage: 0 };
-                    if(currentGameType === 'boss_battle') { timeLimitSetting = data.timeLimit || 60; playerMaxHP = quizData.length * 50; playerHP = playerMaxHP; } 
-                    else if (currentGameType === 'f1_racing') { myF1Team = f1Teams[Math.floor(Math.random() * f1Teams.length)]; playerData.f1Team = myF1Team; timeLimitSetting = data.timeLimit || 60; }
+
+                    if(currentGameType === 'boss_battle') {
+                        timeLimitSetting = data.timeLimit || 60; playerMaxHP = quizData.length * 50; playerHP = playerMaxHP;
+                    } else if (currentGameType === 'f1_racing') {
+                        myF1Team = f1Teams[Math.floor(Math.random() * f1Teams.length)]; playerData.f1Team = myF1Team; timeLimitSetting = data.timeLimit || 60;
+                    }
 
                     gameRef.child('players').child(myPlayerId).set(playerData);
                     document.getElementById('student-lobby-name').innerText = `嗨，${playerName}！`;
-                    if(currentGameType === 'f1_racing') { document.getElementById('student-lobby-team').innerText = `歡迎加入 ${teamNames[myF1Team]} 車隊！`; document.getElementById('student-lobby-team').className = `team-${myF1Team}`; } else { document.getElementById('student-lobby-team').innerText = ""; }
+                    if(currentGameType === 'f1_racing') { document.getElementById('student-lobby-team').innerText = `歡迎加入 ${teamNames[myF1Team]} 車隊！`; document.getElementById('student-lobby-team').className = `team-${myF1Team}`; } 
+                    else { document.getElementById('student-lobby-team').innerText = ""; }
 
                     switchScreen('screen-student-lobby'); listenToGameStart();
-                    gameRef.child('players').child(myPlayerId).on('value', playerSnap => { if (!isGameActive && playerSnap.val() === null) { alert("⚠️ 您已被老師移出大廳！"); window.location.reload(); } });
+                    
+                    gameRef.child('players').child(myPlayerId).on('value', playerSnap => {
+                        if (!isGameActive && playerSnap.val() === null) {
+                            alert("⚠️ 您已被老師移出大廳！");
+                            window.location.reload();
+                        }
+                    });
+
                 } else { alert("PIN碼錯誤或遊戲已開始！"); }
             });
         }
 
         function listenToGameStart() {
             gameRef.on('value', snap => { 
-                let data = snap.val(); if(!data) return;
+                let data = snap.val();
+                if(!data) return;
                 let status = data.status;
+
                 if (status === 'playing' && !isGameActive && currentRole === 'student') { 
                     isGameActive = true; currentQuestionIndex = 0; switchScreen('screen-game'); 
+                    
                     if(currentGameType === 'boss_battle') { bossTotalHP = data.bossTotalHP; bossHP = data.currentBossHP; }
                     if(currentGameType === 'bomb_defusal') { targetWires = data.targetWires; }
                     if(currentGameType === 'f1_racing') { f1TargetDist = data.f1TargetDist; }
@@ -788,6 +810,7 @@
                     document.getElementById('ui-boss-zone').classList.add('hidden'); document.getElementById('ui-bomb-zone').classList.add('hidden'); document.getElementById('ui-f1-zone').classList.add('hidden');
                     document.getElementById('shop-boss').classList.add('hidden'); document.getElementById('shop-bomb').classList.add('hidden'); document.getElementById('shop-f1').classList.add('hidden');
                     document.getElementById('hp-exp-zone').classList.remove('hidden');
+                    
                     document.getElementById('timer-card').classList.remove('hidden'); document.getElementById('timer-display').classList.remove('hidden'); document.getElementById('options-box').classList.remove('hidden');
 
                     if (currentGameType === 'bomb_defusal') {
@@ -802,6 +825,7 @@
                         document.getElementById('ui-boss-zone').classList.remove('hidden'); document.getElementById('shop-boss').classList.remove('hidden');
                         document.getElementById('display-player-name-boss').innerHTML = `${myPlayerName} <span id="ui-level" class="lvl-badge">Lv.1</span>`;
                     }
+                    
                     updateRPGUI(); startGameListener(); loadQuestion(); 
                 }
                 
@@ -817,6 +841,7 @@
 
         function buyItem(type, cost) {
             if (!isGameActive || playerGold < cost) return;
+            
             if (type === 'banana' || type === 'blueshell') {
                 gameRef.child('f1Teams').once('value', snap => {
                     let teams = snap.val(); if(!teams) return;
@@ -834,6 +859,7 @@
             }
 
             playerGold -= cost; playSound('sfx-buy');
+
             if(type === 'dmg') { hasBuffDmg = true; showCenterPopup("⚔️ 獲得會心一擊！", "#FF9800"); } 
             else if (type === 'shield' || type === 'bombshield' || type === 'f1shield') { hasBuffShield = true; showCenterPopup("🛡️ 獲得護盾！", "#4CAF50"); } 
             else if (type === 'timeadd') { gameRef.child('bombEndTime').transaction(t => t + 10000); gameRef.child('combatLogs').push({ name: myPlayerName, type: 'timeadd', timestamp: Date.now() }); showCenterPopup("🕒 奉獻時間精華！全班 +10 秒！", "#2196F3"); } 
@@ -863,8 +889,8 @@
                 let bossPercent = Math.max(0, (bossHP / bossTotalHP) * 100);
                 if (bossPercent <= 50 && !isBossEnraged && bossHP > 0) {
                     isBossEnraged = true;
-                    if(currentRole === "projector") { document.getElementById('proj-rage-warning').classList.remove('hidden'); let pImg = document.getElementById('projector-boss-img'); if(pImg) pImg.classList.add('boss-enraged'); } 
-                    else if(currentRole === "student") { document.getElementById('student-rage-warning').classList.remove('hidden'); let sImg = document.getElementById('student-boss-img'); if(sImg) sImg.classList.add('boss-enraged'); }
+                    if(currentRole === "projector") { document.getElementById('projector-boss-img').classList.add('boss-enraged'); } 
+                    else if(currentRole === "student") { document.getElementById('student-boss-img').classList.add('boss-enraged'); }
                 }
                 if (currentRole === "projector") { 
                     document.getElementById('projector-boss-hp-fill').style.width = bossPercent + '%'; 
@@ -935,8 +961,10 @@
                     });
                     gameRef.child('ultimateFired').on('value', snap => {
                         if(snap.val() === true) {
-                            playSound('sfx-ultimate'); showProjectorLog("☄️ 全班大絕招發動！", "#FFD700", 'boss');
-                            let dmg = Math.floor(bossTotalHP * 0.15); gameRef.child('currentBossHP').transaction(curr => Math.max(0, (curr || bossTotalHP) - dmg));
+                            playSound('sfx-ultimate');
+                            showProjectorLog("☄️ 全班大絕招發動！", "#FFD700", 'boss');
+                            let dmg = Math.floor(bossTotalHP * 0.15); 
+                            gameRef.child('currentBossHP').transaction(curr => Math.max(0, (curr || bossTotalHP) - dmg));
                             gameRef.child('classEnergy').set(0); gameRef.child('ultimateFired').set(false); 
                         }
                     });
@@ -960,7 +988,8 @@
                                 if (msLeft < 30000) document.getElementById('proj-bomb-timer').style.color = '#ff0000';
                             }
                             if (globalWiresCut >= targetWires) {
-                                playSound('sfx-levelup'); gameRef.child('status').set('defused').then(() => { triggerBombEnd('defused'); }); clearInterval(timerInterval);
+                                playSound('sfx-levelup');
+                                gameRef.child('status').set('defused').then(() => { triggerBombEnd('defused'); }); clearInterval(timerInterval);
                             }
                         });
                     }, 100);
@@ -975,10 +1004,13 @@
                             if(isNitro) document.getElementById(`f1-car-${t}`).classList.add('is-nitro'); else document.getElementById(`f1-car-${t}`).classList.remove('is-nitro');
                             
                             if(prog >= f1TargetDist && !announcedTeams[t]) {
-                                announcedTeams[t] = true; playSound('sfx-levelup'); showProjectorLog(`🏁 恭喜！${teamNames[t]} 率先衝過終點！`, "#FFEB3B", 'f1');
+                                announcedTeams[t] = true;
+                                playSound('sfx-levelup');
+                                showProjectorLog(`🏁 恭喜！${teamNames[t]} 率先衝過終點！`, "#FFEB3B", 'f1');
                             }
                         } else if (currentRole === 'student' && myF1Team === t) {
-                            myTotalDamage = prog; document.getElementById('student-f1-progress-text').innerText = `🏆 車隊里程: ${prog} / ${f1TargetDist} m`;
+                            myTotalDamage = prog; 
+                            document.getElementById('student-f1-progress-text').innerText = `🏆 車隊里程: ${prog} / ${f1TargetDist} m`;
                         }
                     });
                 });
@@ -1040,15 +1072,12 @@
             }
             const q = quizData[currentQuestionIndex]; document.getElementById('question-text').innerText = q.question;
             
-            // 🌟 恢復按鈕區塊可以被點擊
-            document.getElementById('options-box').style.pointerEvents = 'auto';
-
+            // 恢復選項按鈕狀態
             for(let i=0; i<4; i++) {
                 let btn = document.getElementById('btn-' + i);
                 btn.innerText = q.options[i];
-                // 🌟 移除 disabled，改用 pointerEvents 來防止變淡
                 btn.disabled = false; 
-                btn.classList.remove('btn-correct-highlight', 'btn-shake');
+                btn.classList.remove('btn-shake');
             }
             
             document.getElementById('options-box').classList.remove('hidden'); startTimer();
@@ -1056,41 +1085,24 @@
 
         function handleWrongAnswer(clickedIdx) {
             clearInterval(timerInterval); 
-            // 🌟 鎖定整個按鈕區塊不能點擊，但不使用 disabled 避免按鈕變淡
-            document.getElementById('options-box').style.pointerEvents = 'none';
+            // 鎖定按鈕防止連點
+            for(let i=0; i<4; i++) { document.getElementById('btn-' + i).disabled = true; }
             
             playerCombo = 0; 
+            // 🌟 絕對強制優先播放錯誤音效
+            playSound('sfx-wrong');
             
             const q = quizData[currentQuestionIndex];
             const correctIdx = q.correctIndex;
-
-            // 🌟 快速作答回饋提示
-            if (clickedIdx !== -1) {
-                showCenterPopup("❌ 答錯了！", "#e21b3c", 1000);
-            } else {
-                showCenterPopup("⏱️ 時間到！", "#FF9800", 1000);
-            }
-            
-            // 🌟 答錯時的專屬音效
-            if (currentGameType === 'f1_racing') {
-                playSound('sfx-slip'); // F1 答錯播放打滑撞車聲
-            } else if (currentGameType === 'bomb_defusal') {
-                playSound('sfx-wrong'); // 拆彈答錯播放警報逼逼聲
-            } else {
-                playSound('sfx-wrong'); // 魔王答錯逼逼聲
-                playSound('sfx-hurt');  // 魔王答錯受傷聲
-            }
-
-            // 記錄學生錯誤的題目以便戰後檢視
-            let studentPickText = clickedIdx === -1 ? "⏱️ 時間到未作答" : q.options[clickedIdx];
-            let correctPickText = q.options[correctIdx];
-            myWrongAnswers.push({ qNum: currentQuestionIndex + 1, question: q.question, studentPick: studentPickText, correctPick: correctPickText });
             
             if (hasBuffShield) {
-                hasBuffShield = false; gameRef.child('combatLogs').push({ name: myPlayerName, type: 'shield', timestamp: Date.now() });
+                hasBuffShield = false; 
+                gameRef.child('combatLogs').push({ name: myPlayerName, type: 'shield', timestamp: Date.now() });
             } else {
                 if (currentGameType === 'boss_battle') {
+                    playSound('sfx-hurt');
                     let dmgTaken = isBossEnraged ? 50 : 25; playerHP = Math.max(0, playerHP - dmgTaken); 
+                    // 魔王攻擊紅光特效
                     let bossImg = document.getElementById('student-boss-img');
                     if(bossImg) { bossImg.classList.remove('boss-attack'); void bossImg.offsetWidth; bossImg.classList.add('boss-attack'); }
                 } else if (currentGameType === 'bomb_defusal') {
@@ -1104,44 +1116,43 @@
             gameRef.child('players').child(myPlayerId).update({ wrong: myWrongCount });
             gameRef.child('questionStats').child(currentQuestionIndex).child('wrong').transaction(curr => (curr || 0) + 1);
             
-            // 🌟 凸顯正確答案 (不淡化其他選項)
-            for(let i=0; i<4; i++) {
-                let btn = document.getElementById('btn-' + i);
-                if (i === correctIdx) {
-                    btn.classList.add('btn-correct-highlight', 'btn-shake');
-                }
+            // 🌟 僅晃動正確答案，不變色不變暗
+            if (correctIdx >= 0 && correctIdx < 4) {
+                document.getElementById('btn-' + correctIdx).classList.add('btn-shake');
             }
 
-            setTimeout(() => { currentQuestionIndex++; loadQuestion(); }, 1500);
+            // 🌟 1 秒後立刻換題
+            setTimeout(() => {
+                currentQuestionIndex++; 
+                loadQuestion();
+            }, 1000);
         }
 
         function checkAnswer(idx) {
             if(currentGameType !== 'bomb_defusal') clearInterval(timerInterval);
+            
             const q = quizData[currentQuestionIndex];
             
-            // 答對邏輯
             if (idx === q.correctIndex) {
-                // 🌟 鎖定整個按鈕區塊不能點擊，但不使用 disabled 避免按鈕變淡
-                document.getElementById('options-box').style.pointerEvents = 'none';
-
-                // 🌟 快速作答回饋提示
-                showCenterPopup("⭕ 答對了！", "#4CAF50", 1000);
+                // 鎖定按鈕防止連點
+                for(let i=0; i<4; i++) { document.getElementById('btn-' + i).disabled = true; }
 
                 playerCombo++; let earnedGold = 10; if (playerCombo >= 3) { earnedGold += 5; } playerGold += earnedGold;
                 
-                // 🌟 答對時的專屬音效
+                // 🌟 絕對強制優先播放答對音效
                 if (currentGameType === 'f1_racing') {
-                    playSound('sfx-nitro'); // F1 專屬引擎加速聲
-                } else if (currentGameType === 'bomb_defusal') {
-                    playSound('sfx-defuse'); // 拆彈專屬高科技聲
+                    playSound('sfx-nitro'); // 賽車專屬加速聲
                 } else {
-                    playSound('sfx-attack'); // 一般打怪音效
+                    playSound('sfx-attack'); // 打怪聲
                 }
+
+                showCenterPopup("⭕ 答對！", "#4CAF50", 600);
 
                 if (currentGameType === 'boss_battle') {
                     gameRef.child('classEnergy').transaction(curr => Math.min(100, (curr || 0) + 2));
                     let finalDmg = 40 + ((playerLevel - 1) * 10); 
                     if (hasBuffDmg) { finalDmg *= 3; hasBuffDmg = false; gameRef.child('combatLogs').push({ name: myPlayerName, type: 'critical', timestamp: Date.now() }); showCenterPopup("💥 會心一擊！傷害 3 倍！", "#FF9800", 1000); }
+                    
                     gameRef.child('currentBossHP').transaction(curr => Math.max(0, (curr || bossTotalHP) - finalDmg)); myTotalDamage += finalDmg;
                     
                     playerExp += 10; let expNeeded = playerLevel * 30;
@@ -1159,7 +1170,10 @@
                 gameRef.child('players').child(myPlayerId).update({ correct: myCorrectCount, damage: myTotalDamage });
                 gameRef.child('questionStats').child(currentQuestionIndex).child('correct').transaction(curr => (curr || 0) + 1);
                 
-                setTimeout(() => { currentQuestionIndex++; loadQuestion(); }, 500);
+                // 🌟 答對極短暫停 0.6 秒後換題
+                setTimeout(() => {
+                    currentQuestionIndex++; loadQuestion();
+                }, 600);
             } else { 
                 handleWrongAnswer(idx); 
             }
@@ -1206,15 +1220,7 @@
                     let stat = qStats[index] || { correct: 0, wrong: 0 }; let total = (stat.correct || 0) + (stat.wrong || 0); let wrongRate = total === 0 ? 0 : Math.round(((stat.wrong || 0) / total) * 100);
                     let optionsHTML = ""; let labels = ['A', 'B', 'C', 'D'];
                     q.options.forEach((opt, optIdx) => { let isCorrect = (optIdx === q.correctIndex); let optClass = isCorrect ? "q-option q-correct" : "q-option"; let mark = isCorrect ? "✅ " : "⚪ "; optionsHTML += `<div class="${optClass}">${mark}${labels[optIdx]}) ${opt}</div>`; });
-                    
-                    // 🌟 老師端點擊可以整體放大檢視
-                    statsHTML += `<div class="stat-item" onclick="this.classList.toggle('expanded'); let d = document.getElementById('q-detail-${index}'); d.style.display = d.style.display === 'block' ? 'none' : 'block';">
-                        <strong style="font-size: 18px; transition: 0.3s;">Q${index+1}: ${q.question} ⬇️</strong><br>
-                        <span class="stat-bar-text" style="color: green; transition: 0.3s;">✔ 答對：${stat.correct || 0} 人</span> | <span class="stat-bar-text" style="color: red; transition: 0.3s;">✖ 答錯：${stat.wrong || 0} 人</span>
-                        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${wrongRate}%;"></div></div>
-                        <div class="stat-bar-text" style="text-align: right; font-size: 14px; margin-top: 2px; transition: 0.3s;">錯誤率 ${wrongRate}%</div>
-                        <div id="q-detail-${index}" class="q-detail-box">${optionsHTML}</div>
-                    </div>`;
+                    statsHTML += `<div class="stat-item" onclick="document.getElementById('q-detail-${index}').style.display = document.getElementById('q-detail-${index}').style.display === 'block' ? 'none' : 'block'"><strong>Q${index+1}: ${q.question} ⬇️</strong><br><span style="color: green;">✔ 答對：${stat.correct || 0} 人</span> | <span style="color: red;">✖ 答錯：${stat.wrong || 0} 人</span><div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${wrongRate}%;"></div></div><div style="text-align: right; font-size: 14px; margin-top: 2px;">錯誤率 ${wrongRate}%</div><div id="q-detail-${index}" class="q-detail-box">${optionsHTML}</div></div>`;
                 });
                 document.getElementById('question-stats-list').innerHTML = statsHTML;
             });
@@ -1223,51 +1229,14 @@
         function generateStudentSummary() {
             document.querySelectorAll('.screen-page').forEach(page => page.classList.add('hidden'));
             document.getElementById('screen-summary-student').classList.remove('hidden');
-
-            let scoreText = "";
-            if (currentGameType === 'boss_battle') {
-                scoreText = `總輸出傷害：${myTotalDamage} 點<br>答對 ${myCorrectCount} 題 / 答錯 ${myWrongCount} 題`;
-            } else if (currentGameType === 'bomb_defusal') {
-                scoreText = `成功剪線：${myCorrectCount} 條<br>答錯 ${myWrongCount} 題`;
-            } else if (currentGameType === 'f1_racing') {
-                scoreText = `貢獻里程：${myTotalDamage} m<br>答對 ${myCorrectCount} 題 / 答錯 ${myWrongCount} 題`;
-            }
-            document.getElementById('my-final-score').innerHTML = scoreText;
-
+            document.getElementById('my-final-score').innerText = `你的戰績：✅ 答對 ${myCorrectCount} 題 ｜ ❌ 答錯 ${myWrongCount} 題`;
             gameRef.once('value', snap => {
-                const data = snap.val();
-                if (data && data.players) {
-                    let players = Object.values(data.players);
-                    let sorted = players.sort((a, b) => {
-                        if (currentGameType === 'boss_battle') return (b.damage || 0) - (a.damage || 0);
-                        return (b.correct || 0) - (a.correct || 0);
-                    });
-                    let mvpHTML = "";
-                    sorted.slice(0, 5).forEach((p, i) => {
-                        let scoreVal = currentGameType === 'boss_battle' ? `${p.damage} 傷害` : `${p.correct} 題`;
-                        if ((currentGameType === 'boss_battle' && p.damage > 0) || (currentGameType !== 'boss_battle' && p.correct > 0)) {
-                            mvpHTML += `<li style="display: flex; justify-content: space-between; padding: 5px 0;"><span>第 ${i+1} 名：${p.name}</span> <span style="font-weight:bold;">${scoreVal}</span></li>`;
-                        }
-                    });
-                    document.getElementById('student-mvp-list').innerHTML = mvpHTML || "<li>大家都在偷懶喔！</li>";
+                const data = snap.val(); if(data && data.players) {
+                    let players = Object.values(data.players); let sortedByCorrect = [...players].sort((a, b) => (b.correct || 0) - (a.correct || 0)); let mvpHTML = "";
+                    sortedByCorrect.slice(0, 5).forEach((p, i) => { if((p.correct || 0) > 0) mvpHTML += `<li><span>🏅 第 ${i+1} 名：${p.name}</span> <span style="float:right;">✅ ${p.correct}</span></li>`; });
+                    document.getElementById('student-mvp-list').innerHTML = mvpHTML;
                 }
             });
-
-            // 🌟 學生端錯題檢視：大幅調大字體
-            let reviewHtml = "";
-            if (myWrongAnswers.length === 0) {
-                reviewHtml = "<p style='color: #2e7d32; font-weight: bold; font-size: 22px; margin-top: 20px;'>🎉 太神啦！你這局全對，完全沒有任何錯誤！</p>";
-            } else {
-                myWrongAnswers.forEach(item => {
-                    reviewHtml += `<div style="background: #ffebee; border-left: 8px solid #e21b3c; padding: 15px; margin-bottom: 15px; text-align: left; border-radius: 8px;">
-                        <strong style="color: #333; font-size: 24px; display: block; margin-bottom: 10px;">Q${item.qNum}: ${item.question}</strong>
-                        <span style="color: #666; font-size: 20px; line-height: 1.5;">你的作答：<span style="text-decoration: line-through; color: #e21b3c;">${item.studentPick}</span></span><br>
-                        <span style="color: #2e7d32; font-weight: bold; font-size: 20px; line-height: 1.5;">正確答案：${item.correctPick}</span>
-                    </div>`;
-                });
-            }
-            document.getElementById('student-wrong-list').innerHTML = reviewHtml;
-            document.getElementById('student-wrong-review-container').classList.remove('hidden');
         }
     </script>
 </body>
