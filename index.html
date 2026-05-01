@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>勇者學園對戰平台 15.0 (流暢無閃光版)</title>
+    <title>勇者學園對戰平台 16.0 (完美手感版)</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
@@ -31,7 +31,6 @@
         input, select, textarea { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 18px; }
         button { padding: 15px 20px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; margin: 5px; transition: 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.2);}
         button:active:not(:disabled) { transform: translateY(4px); box-shadow: none;}
-        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: 0 4px 0 rgba(0,0,0,0.2); }
         
         .btn-primary { background-color: #4CAF50; }
         .btn-teacher { background-color: #607D8B; }
@@ -57,7 +56,6 @@
         
         @keyframes boss-attack-anim { 0% { transform: scale(1); filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); } 50% { transform: scale(1.3); filter: drop-shadow(0 0 50px red) brightness(1.5); } 100% { transform: scale(1); filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); } }
         .boss-attack { animation: boss-attack-anim 0.6s ease-out !important; }
-
         @keyframes ultimate-shake { 0% { transform: scale(1) rotate(0deg); } 20% { transform: scale(1.3) rotate(15deg); } 40% { transform: scale(0.9) rotate(-10deg); } 60% { transform: scale(1.2) rotate(5deg); } 80% { transform: scale(0.95) rotate(-5deg); } 100% { transform: scale(1) rotate(0deg); } }
         
         .hp-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 0px white;}
@@ -73,18 +71,23 @@
         /* 作答選項區 */
         .options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 15px; }
         .option-btn { padding: 15px; font-size: 18px; font-weight: bold; color: white; border-radius: 10px; border: none; cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); min-height: 80px; display: flex; align-items: center; justify-content: center; transition: 0.3s;}
+        
+        /* 🌟 重要：禁用按鈕時，絕對不變暗、不淡化 */
+        .option-btn:disabled { opacity: 1 !important; cursor: default; transform: none; box-shadow: 0 4px 0 rgba(0,0,0,0.2); filter: none !important; }
+        
         #btn-0 { background-color: #e21b3c; border-bottom: 5px solid #a3112a;} 
         #btn-1 { background-color: #1368ce; border-bottom: 5px solid #0d4a96;} 
         #btn-2 { background-color: #d89e00; border-bottom: 5px solid #9e7400;} 
         #btn-3 { background-color: #26890c; border-bottom: 5px solid #1a5e08;} 
         
-        /* 🌟 答錯時正確選項的晃動特效 (不變色、不淡化) */
+        /* 🌟 答錯時：正確選項純粹晃動 (不變色、不變暗) */
         @keyframes shake-option {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-15px); }
             40%, 80% { transform: translateX(15px); }
         }
         .btn-shake { animation: shake-option 0.4s ease-in-out !important; }
+        .btn-correct-highlight { background-color: #4CAF50 !important; border-bottom: 5px solid #2E7D32 !important; box-shadow: 0 0 20px #4CAF50 !important; z-index: 10; }
 
         .qr-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; margin: 20px 0; }
         #qrcode { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block;}
@@ -102,7 +105,6 @@
         .gold-text { color: #f57f17; font-weight: bold; font-size: 18px; }
         .combo-text { color: #e64a19; font-weight: bold; font-size: 16px; margin-left: 10px; animation: pulse 1s infinite; }
         
-        /* 魔法商城網格化排版 */
         .shop-container { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; padding-bottom: 5px; }
         .shop-item { background: #fffde7; border: 2px solid #ffb300; border-radius: 8px; padding: 10px; font-size: 15px; font-weight: bold; color: #333; cursor: pointer; transition: 0.2s; margin: 0; box-shadow: 0 4px 0 #ffe082;}
         .shop-item:hover:not(:disabled) { transform: translateY(-2px); background: #ffecb3;}
@@ -144,13 +146,20 @@
         @keyframes pulse-fast { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes slide-in { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* 📱 學生遊戲介面：手機預設排版 */
+        /* 📱 學生遊戲介面排版系統 */
         #screen-game { width: 100%; max-width: 1200px; padding: 0; }
         .game-layout { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        .left-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-        .right-panel { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        
+        /* 🌟 手機版 (小螢幕)：利用 display: contents 打破結構，強制排序讓題目在上方 */
+        @media (max-width: 767px) {
+            .left-panel, .right-panel { display: contents; }
+            #ui-boss-zone, #ui-bomb-zone, #ui-f1-zone { order: 1; margin-top: 10px; }
+            #quiz-content-area { order: 2; display: flex; flex-direction: column; width: 100%; }
+            #hp-exp-zone { order: 3; }
+            #shop-container-card { order: 4; margin-bottom: 20px;}
+        }
 
-        /* 🖥️ 學生遊戲介面：平板專屬雙欄排版 */
+        /* 🖥️ 平板專屬雙欄排版 */
         @media (min-width: 768px) {
             .card { max-width: 800px; padding: 40px; margin: 20px auto;}
             h1 { font-size: 32px; }
@@ -181,7 +190,7 @@
             #screen-game:not(.hidden) { display: flex; flex-direction: column; height: calc(100vh - 40px); overflow: hidden; }
             .game-layout { flex-direction: row; flex: 1; overflow: hidden; align-items: stretch; gap: 20px;}
             
-            /* 🌟 調整：左欄 (主畫面 -> 商城 -> 狀態) */
+            /* 左欄 (主畫面 -> 商城 -> 狀態) */
             .left-panel { width: 35%; min-width: 320px; max-width: 450px; height: 100%; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 15px;}
             .left-panel::-webkit-scrollbar { width: 6px; }
             .left-panel::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
@@ -202,15 +211,6 @@
     </style>
 </head>
 <body>
-
-    <audio id="sfx-attack" src="https://actions.google.com/sounds/v1/impacts/crash.ogg" preload="auto"></audio>
-    <audio id="sfx-hurt" src="https://actions.google.com/sounds/v1/weapons/retro_laser_shot.ogg" preload="auto"></audio>
-    <audio id="sfx-wrong" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
-    <audio id="sfx-levelup" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg" preload="auto"></audio>
-    <audio id="sfx-buy" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
-    <audio id="sfx-ultimate" src="https://actions.google.com/sounds/v1/explosions/big_explosion.ogg" preload="auto"></audio>
-    <audio id="sfx-nitro" src="https://actions.google.com/sounds/v1/transportation/car_pass_by.ogg" preload="auto"></audio>
-    <audio id="sfx-slip" src="https://actions.google.com/sounds/v1/cartoon/slip_and_crash.ogg" preload="auto"></audio>
 
     <div id="screen-home" class="screen-page card">
         <h1>🎮 勇者學園對戰平台</h1>
@@ -242,7 +242,7 @@
 
         <div style="background: #e3f2fd; border-radius: 10px; border: 2px dashed #2196F3; padding: 15px; margin: 15px 0; text-align: left;">
             <h3 style="margin-top: 0; color: #1565C0;">💡 智能難度計算系統</h3>
-            <p style="margin: 5px 0; font-size: 16px; color: #333;">當您在大廳點擊「正式開始遊戲」時，系統將會依據<strong>【實際加入的學生人數】</strong>與<strong>【題庫總題數】</strong>，自動為您計算出最完美的魔王血量、炸彈目標與賽車里程數！</p>
+            <p style="margin: 5px 0; font-size: 16px; color: #333;">當您在大廳點擊「正式開始遊戲」時，系統將會依據<strong>【實際加入的學生人數】</strong>與<strong>【題庫總題數】</strong>，自動為您計算出最完美的目標里程與魔王血量！</p>
             <div style="display: flex; align-items: center; margin-top: 10px;">
                 <label style="font-weight: bold; color: #e21b3c; font-size: 16px; width: 200px;">⏳ 每題作答時間 (秒):</label>
                 <input type="number" id="teacher-time-limit" value="60" style="border: 2px solid #e21b3c; background: #ffebee; margin: 0; flex: 1;">
@@ -284,6 +284,7 @@
         <p id="teacher-msg" style="color:red; font-weight:bold;"></p>
     </div>
 
+    <!-- 大廳 -->
     <div id="screen-teacher-lobby" class="screen-page card hidden" style="max-width: 800px;">
         <h1 id="lobby-game-title">等待勇者集結...</h1>
         <h2 id="lobby-pin-display" style="color:#e21b3c; font-size: 30px;"></h2>
@@ -309,6 +310,7 @@
         <p style="color: #666; font-weight: bold;">請抬頭看黑板大螢幕確認名字！</p>
     </div>
 
+    <!-- 大螢幕：魔王戰模式 -->
     <div id="screen-projector-boss" class="screen-page card hidden" style="max-width: 900px; background: rgba(0,0,0,0.8); color: white; border: none; position: relative;">
         <div id="projector-leaderboard-boss" class="leaderboard-box hidden"><h3 class="lb-title">🏆 累積傷害排行</h3><div id="lb-list-boss">等待攻擊...</div></div>
         <div id="projector-log-container-boss" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
@@ -324,6 +326,7 @@
         <button style="margin-top: 30px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 結束戰鬥並觀看戰報</button>
     </div>
 
+    <!-- 大螢幕：拆彈模式 -->
     <div id="screen-projector-bomb" class="screen-page card hidden" style="max-width: 900px; background: rgba(20,20,20,0.9); color: white; border: 3px solid #e21b3c; position: relative;">
         <div id="projector-leaderboard-bomb" class="leaderboard-box hidden"><h3 class="lb-title" style="color:#4DD0E1; border-color:#4DD0E1;">🏆 拆彈菁英排行</h3><div id="lb-list-bomb">等待剪線...</div></div>
         <div id="projector-log-container-bomb" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
@@ -339,6 +342,7 @@
         <button style="margin-top: 20px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 強制終止任務</button>
     </div>
 
+    <!-- 大螢幕：F1賽車模式 -->
     <div id="screen-projector-f1" class="screen-page card hidden" style="max-width: 1000px; width: 95%; background: rgba(30,30,30,0.95); color: white; border: 4px solid #4CAF50; position: relative; padding: 10px;">
         <h1 style="color: #4CAF50; text-shadow: 0 0 10px #4CAF50; font-size: 36px; margin: 10px 0;">🏎️ 車隊爭霸大亂鬥 🏎️</h1>
         <div id="projector-log-container-f1" style="position: absolute; right: 20px; top: 20px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; z-index: 100;"></div>
@@ -363,10 +367,12 @@
         <button style="margin-top: 20px; background: #607D8B; padding: 15px 40px; font-size: 22px;" onclick="triggerGameEnd()">🛑 結束比賽並觀看戰報</button>
     </div>
 
+    <!-- 🌟 學生端：智慧佈局與雙欄遊戲介面 -->
     <div id="screen-game" class="screen-page hidden">
         <div class="game-layout">
             
             <div class="left-panel">
+                <!-- 1. 主畫面 -->
                 <div id="ui-boss-zone" class="card">
                     <h2 id="display-player-name-boss" style="margin-top:0; color: #1368ce;">勇者 <span id="ui-level" class="lvl-badge">Lv.1</span></h2>
                     <div id="student-hit-container" style="display:inline-block; padding:5px;"><img id="student-boss-img" src="https://i.postimg.cc/ncfvN7Jf/boss.png" class="boss-image"></div>
@@ -388,6 +394,7 @@
                     <div class="hp-text" id="student-f1-progress-text">🏆 車隊里程: 0 m</div>
                 </div>
                 
+                <!-- 2. 魔法商城 -->
                 <div class="card" id="shop-container-card" style="background: #fff8e1; border-color: #ffc107;">
                     <h3 style="margin: 0 0 5px 0; color: #f57f17;">🏪 魔法商城</h3>
                     
@@ -403,13 +410,14 @@
                     </div>
 
                     <div id="shop-f1" class="shop-container hidden">
-                        <button class="shop-item" id="btn-shop-nitro" onclick="buyItem('nitro', 20)">🔥 氮氣加速<br><span style="font-size:12px; color:#f57f17;">(狂飆300m 20G)</span></button>
+                        <button class="shop-item" id="btn-shop-nitro" onclick="buyItem('nitro', 20)">🔥 氮氣加速<br><span style="font-size:12px; color:#f57f17;">(狂飆 20G)</span></button>
                         <button class="shop-item" id="btn-shop-f1shield" onclick="buyItem('f1shield', 30)">🛡️ 車體護盾<br><span style="font-size:12px; color:#f57f17;">(防倒退 30G)</span></button>
-                        <button class="shop-item" id="btn-shop-banana" onclick="buyItem('banana', 40)">🍌 香蕉皮<br><span style="font-size:12px; color:#f57f17;">(絆倒第一 40G)</span></button>
+                        <button class="shop-item" id="btn-shop-banana" onclick="buyItem('banana', 40)">🍌 香蕉皮<br><span style="font-size:12px; color:#f57f17;">(絆倒敵方 40G)</span></button>
                         <button class="shop-item" id="btn-shop-blueshell" onclick="buyItem('blueshell', 60)">🐢 藍色龜殼<br><span style="font-size:12px; color:#f57f17;">(轟炸第一 60G)</span></button>
                     </div>
                 </div>
 
+                <!-- 3. 個人狀態區 -->
                 <div class="card" id="hp-exp-zone">
                     <div>
                         <div class="hp-text player-color" id="player-hp-text">🛡️ 你的血量</div>
@@ -425,6 +433,7 @@
                 </div>
             </div>
 
+            <!-- 右欄：題目與作答區 -->
             <div class="right-panel">
                 <div id="quiz-content-area">
                     <div class="card" id="timer-card">
@@ -509,28 +518,70 @@
         let isGameActive = false; 
         let announcedTeams = {}; 
 
-        // 🌟 絕對強制的音效播放系統 (不再有靜音播放的 BUG)
-        function playSound(id) {
-            let audio = document.getElementById(id);
-            if (audio) {
-                audio.pause();
-                audio.currentTime = 0;
-                audio.volume = 1;
-                audio.play().catch(e => console.log(e));
+        // 🌟 完全自給自足的無延遲音效合成器 (Web Audio API)
+        let audioCtx;
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) audioCtx = new AudioContext();
             }
+            if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
         }
 
-        // 🌟 點擊畫面任意處時，讓瀏覽器載入音訊，但不預先播放
-        function unlockAudioOnInteraction() {
-            ['sfx-attack', 'sfx-hurt', 'sfx-wrong', 'sfx-levelup', 'sfx-buy', 'sfx-ultimate', 'sfx-nitro', 'sfx-slip'].forEach(id => {
-                let audio = document.getElementById(id);
-                if (audio) { audio.load(); }
-            });
-            document.removeEventListener('click', unlockAudioOnInteraction);
-            document.removeEventListener('touchstart', unlockAudioOnInteraction);
+        // 任何螢幕點擊都會解鎖音效引擎
+        document.addEventListener('click', initAudioContext, { once: true });
+        document.addEventListener('touchstart', initAudioContext, { once: true });
+
+        function playSound(type) {
+            try {
+                initAudioContext();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'attack') {
+                    osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+                    gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now); osc.stop(now + 0.15);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now); osc.frequency.linearRampToValueAtTime(80, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now); osc.stop(now + 0.3);
+                } else if (type === 'levelup') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now+0.1); osc.frequency.setValueAtTime(659, now+0.2); osc.frequency.setValueAtTime(880, now+0.3);
+                    gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now); osc.stop(now + 0.5);
+                } else if (type === 'nitro') {
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(100, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.3);
+                    gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.4, now + 0.15); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                    osc.start(now); osc.stop(now + 0.3);
+                } else if (type === 'buy') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(900, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
+                } else if (type === 'hurt') {
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(80, now); osc.frequency.exponentialRampToValueAtTime(20, now + 0.2);
+                    gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now); osc.stop(now + 0.2);
+                } else if (type === 'slip') {
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(200, now + 0.4);
+                    gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now); osc.stop(now + 0.4);
+                } else if (type === 'ultimate') {
+                    osc.type = 'square'; osc.frequency.setValueAtTime(50, now); osc.frequency.linearRampToValueAtTime(30, now + 0.8);
+                    gain.gain.setValueAtTime(0.5, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.8);
+                    osc.start(now); osc.stop(now + 0.8);
+                }
+            } catch (e) { console.log("音效模組執行失敗", e); }
         }
-        document.addEventListener('click', unlockAudioOnInteraction);
-        document.addEventListener('touchstart', unlockAudioOnInteraction);
+
+        const setBtnDisabled = (id, condition) => {
+            const btn = document.getElementById(id);
+            if (btn) btn.disabled = condition;
+        };
 
         function showCenterPopup(msg, bgColor, duration = 1500) {
             let popup = document.createElement('div');
@@ -613,14 +664,23 @@
             return arr;
         }
 
+        // 🌟 空白防呆驗證與強制報錯機制
         function saveQuizBank() {
             const saveName = document.getElementById('quiz-save-name').value.trim();
             const quizArray = getParsedQuizFromUI();
+            
             if (!saveName) return alert("❌ 儲存失敗：請先輸入「題庫名稱」！");
             if (quizArray.length === 0) return alert("❌ 儲存失敗：您的題庫是空的，請先新增題目！");
+            
             db.ref('SavedQuizzes/' + saveName).set(quizArray)
-            .then(() => { alert(`✅ 儲存成功！已將 ${quizArray.length} 題存入雲端。`); document.getElementById('quiz-save-name').value = ""; loadQuizList(); })
-            .catch(error => { alert(`❌ 儲存失敗！無法連線到資料庫。\n錯誤代碼：${error.message}`); });
+            .then(() => { 
+                alert(`✅ 儲存成功！已將 ${quizArray.length} 題存入雲端。`); 
+                document.getElementById('quiz-save-name').value = ""; 
+                loadQuizList(); 
+            })
+            .catch(error => {
+                alert(`❌ 儲存失敗！無法連線到資料庫。\n錯誤代碼：${error.message}`);
+            });
         }
 
         function loadQuizList() {
@@ -667,7 +727,6 @@
             gameRef.child('combatLogs').remove();
 
             let gameData = { pinCode: pin, gameType: type, questions: parsedQuiz, status: 'waiting', players: {}, questionStats: {} };
-
             gameData.timeLimit = parseInt(document.getElementById('teacher-time-limit').value || 60);
 
             if (type === 'boss_battle') {
@@ -759,6 +818,7 @@
         }
 
         function joinLobby() {
+            initAudioContext();
             const inputPin = document.getElementById('student-pin').value.trim();
             const playerName = document.getElementById('student-name').value.trim();
             if(!inputPin || !playerName) return;
@@ -785,11 +845,9 @@
                     
                     gameRef.child('players').child(myPlayerId).on('value', playerSnap => {
                         if (!isGameActive && playerSnap.val() === null) {
-                            alert("⚠️ 您已被老師移出大廳！");
-                            window.location.reload();
+                            alert("⚠️ 您已被老師移出大廳！"); window.location.reload();
                         }
                     });
-
                 } else { alert("PIN碼錯誤或遊戲已開始！"); }
             });
         }
@@ -848,7 +906,7 @@
                     let targetTeam = ''; let maxProg = -1;
                     for(let t in teams) { if (t !== myF1Team && teams[t].progress > maxProg) { maxProg = teams[t].progress; targetTeam = t; } }
                     if (targetTeam) {
-                        playerGold -= cost; playSound('sfx-buy');
+                        playerGold -= cost; playSound('buy');
                         let penalty = (type === 'banana') ? 100 : 300; 
                         gameRef.child('f1Teams').child(targetTeam).child('progress').transaction(p => Math.max(0, (p||0) - penalty));
                         gameRef.child('combatLogs').push({ name: myPlayerName, type: type, targetTeamName: teamNames[targetTeam], targetTeamId: targetTeam, timestamp: Date.now() });
@@ -858,14 +916,14 @@
                 return;
             }
 
-            playerGold -= cost; playSound('sfx-buy');
+            playerGold -= cost; playSound('buy');
 
             if(type === 'dmg') { hasBuffDmg = true; showCenterPopup("⚔️ 獲得會心一擊！", "#FF9800"); } 
             else if (type === 'shield' || type === 'bombshield' || type === 'f1shield') { hasBuffShield = true; showCenterPopup("🛡️ 獲得護盾！", "#4CAF50"); } 
             else if (type === 'timeadd') { gameRef.child('bombEndTime').transaction(t => t + 10000); gameRef.child('combatLogs').push({ name: myPlayerName, type: 'timeadd', timestamp: Date.now() }); showCenterPopup("🕒 奉獻時間精華！全班 +10 秒！", "#2196F3"); } 
             else if (type === 'skip') { gameRef.child('combatLogs').push({ name: myPlayerName, type: 'skip', timestamp: Date.now() }); showCenterPopup("✂️ 使用萬能剪刀！秒殺此題！", "#FF9800"); checkAnswer(quizData[currentQuestionIndex].correctIndex); return; }
             else if (type === 'nitro') {
-                playSound('sfx-nitro');
+                playSound('nitro');
                 gameRef.child('f1Teams').child(myF1Team).child('progress').transaction(p => (p||0) + 300); 
                 gameRef.child('f1Teams').child(myF1Team).child('isNitro').set(true); setTimeout(() => { gameRef.child('f1Teams').child(myF1Team).child('isNitro').set(false); }, 2000);
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'nitro', team: teamNames[myF1Team], timestamp: Date.now() }); showCenterPopup("🔥 氮氣加速！狂飆 300m！", "#F44336");
@@ -961,7 +1019,7 @@
                     });
                     gameRef.child('ultimateFired').on('value', snap => {
                         if(snap.val() === true) {
-                            playSound('sfx-ultimate');
+                            playSound('ultimate');
                             showProjectorLog("☄️ 全班大絕招發動！", "#FFD700", 'boss');
                             let dmg = Math.floor(bossTotalHP * 0.15); 
                             gameRef.child('currentBossHP').transaction(curr => Math.max(0, (curr || bossTotalHP) - dmg));
@@ -979,7 +1037,7 @@
                             let msLeft = bombEndTime - Date.now();
                             if (msLeft <= 0) {
                                 document.getElementById('proj-bomb-timer').innerText = "00:00.0";
-                                playSound('sfx-ultimate');
+                                playSound('ultimate');
                                 document.getElementById('screen-projector-bomb').style.backgroundColor = "#B71C1C"; 
                                 gameRef.child('status').set('exploded').then(() => { triggerBombEnd('exploded'); }); clearInterval(timerInterval);
                             } else {
@@ -988,7 +1046,7 @@
                                 if (msLeft < 30000) document.getElementById('proj-bomb-timer').style.color = '#ff0000';
                             }
                             if (globalWiresCut >= targetWires) {
-                                playSound('sfx-levelup');
+                                playSound('levelup');
                                 gameRef.child('status').set('defused').then(() => { triggerBombEnd('defused'); }); clearInterval(timerInterval);
                             }
                         });
@@ -1005,7 +1063,7 @@
                             
                             if(prog >= f1TargetDist && !announcedTeams[t]) {
                                 announcedTeams[t] = true;
-                                playSound('sfx-levelup');
+                                playSound('levelup');
                                 showProjectorLog(`🏁 恭喜！${teamNames[t]} 率先衝過終點！`, "#FFEB3B", 'f1');
                             }
                         } else if (currentRole === 'student' && myF1Team === t) {
@@ -1029,11 +1087,11 @@
                     if (log.type === 'nitro') { msg = `🔥 ${log.team} 的 ${log.name} 發動了 氮氣加速！`; color = "#FF5722"; }
                     if (log.type === 'banana') { 
                         msg = `🍌 ${log.name} 丟出香蕉皮！${log.targetTeamName} 打滑退後！`; color = "#FFEB3B"; 
-                        playSound('sfx-slip'); let targetCar = document.getElementById(`f1-car-${log.targetTeamId}`); if(targetCar) { targetCar.classList.add('spin-effect'); setTimeout(() => targetCar.classList.remove('spin-effect'), 1000); }
+                        playSound('slip'); let targetCar = document.getElementById(`f1-car-${log.targetTeamId}`); if(targetCar) { targetCar.classList.add('spin-effect'); setTimeout(() => targetCar.classList.remove('spin-effect'), 1000); }
                     }
                     if (log.type === 'blueshell') { 
                         msg = `🐢 ${log.name} 發射藍色龜殼！${log.targetTeamName} 遭到毀滅轟炸！`; color = "#2196F3"; 
-                        playSound('sfx-ultimate'); let targetCar = document.getElementById(`f1-car-${log.targetTeamId}`); if(targetCar) { targetCar.classList.add('ultimate-hit'); setTimeout(() => targetCar.classList.remove('ultimate-hit'), 500); }
+                        playSound('ultimate'); let targetCar = document.getElementById(`f1-car-${log.targetTeamId}`); if(targetCar) { targetCar.classList.add('ultimate-hit'); setTimeout(() => targetCar.classList.remove('ultimate-hit'), 500); }
                     }
                     if (msg) showProjectorLog(msg, color, modePrefix);
                 });
@@ -1077,7 +1135,7 @@
                 let btn = document.getElementById('btn-' + i);
                 btn.innerText = q.options[i];
                 btn.disabled = false; 
-                btn.classList.remove('btn-shake');
+                btn.classList.remove('btn-correct-highlight', 'btn-shake');
             }
             
             document.getElementById('options-box').classList.remove('hidden'); startTimer();
@@ -1089,8 +1147,8 @@
             for(let i=0; i<4; i++) { document.getElementById('btn-' + i).disabled = true; }
             
             playerCombo = 0; 
-            // 🌟 絕對強制優先播放錯誤音效
-            playSound('sfx-wrong');
+            // 🌟 強制播放錯誤音效 (無延遲)
+            playSound('wrong');
             
             const q = quizData[currentQuestionIndex];
             const correctIdx = q.correctIndex;
@@ -1100,7 +1158,7 @@
                 gameRef.child('combatLogs').push({ name: myPlayerName, type: 'shield', timestamp: Date.now() });
             } else {
                 if (currentGameType === 'boss_battle') {
-                    playSound('sfx-hurt');
+                    playSound('hurt');
                     let dmgTaken = isBossEnraged ? 50 : 25; playerHP = Math.max(0, playerHP - dmgTaken); 
                     // 魔王攻擊紅光特效
                     let bossImg = document.getElementById('student-boss-img');
@@ -1116,7 +1174,7 @@
             gameRef.child('players').child(myPlayerId).update({ wrong: myWrongCount });
             gameRef.child('questionStats').child(currentQuestionIndex).child('wrong').transaction(curr => (curr || 0) + 1);
             
-            // 🌟 僅晃動正確答案，不變色不變暗
+            // 🌟 僅晃動正確答案，絕對不變色不變暗
             if (correctIdx >= 0 && correctIdx < 4) {
                 document.getElementById('btn-' + correctIdx).classList.add('btn-shake');
             }
@@ -1139,26 +1197,27 @@
 
                 playerCombo++; let earnedGold = 10; if (playerCombo >= 3) { earnedGold += 5; } playerGold += earnedGold;
                 
-                // 🌟 絕對強制優先播放答對音效
+                // 🌟 強制播放專屬音效
                 if (currentGameType === 'f1_racing') {
-                    playSound('sfx-nitro'); // 賽車專屬加速聲
+                    playSound('nitro'); // 賽車加速聲
                 } else {
-                    playSound('sfx-attack'); // 打怪聲
+                    playSound('attack'); // 一般打怪聲
                 }
 
+                // 🌟 答對直接顯示並極短暫留
+                document.getElementById('btn-' + idx).classList.add('btn-correct-highlight');
                 showCenterPopup("⭕ 答對！", "#4CAF50", 600);
 
                 if (currentGameType === 'boss_battle') {
                     gameRef.child('classEnergy').transaction(curr => Math.min(100, (curr || 0) + 2));
                     let finalDmg = 40 + ((playerLevel - 1) * 10); 
-                    if (hasBuffDmg) { finalDmg *= 3; hasBuffDmg = false; gameRef.child('combatLogs').push({ name: myPlayerName, type: 'critical', timestamp: Date.now() }); showCenterPopup("💥 會心一擊！傷害 3 倍！", "#FF9800", 1000); }
+                    if (hasBuffDmg) { finalDmg *= 3; hasBuffDmg = false; gameRef.child('combatLogs').push({ name: myPlayerName, type: 'critical', timestamp: Date.now() }); showCenterPopup("💥 會心一擊！傷害 3 倍！", "#FF9800", 600); }
                     
                     gameRef.child('currentBossHP').transaction(curr => Math.max(0, (curr || bossTotalHP) - finalDmg)); myTotalDamage += finalDmg;
                     
                     playerExp += 10; let expNeeded = playerLevel * 30;
                     if (playerExp >= expNeeded) { 
-                        playerLevel++; playerExp -= expNeeded; playSound('sfx-levelup');
-                        showCenterPopup("⭐ 等級提升！傷害增加！", "#FFD700", 1000);
+                        playerLevel++; playerExp -= expNeeded; playSound('levelup');
                     } 
                 } else if (currentGameType === 'bomb_defusal') {
                     gameRef.child('bombEndTime').transaction(t => t + 3000); gameRef.child('wiresCut').transaction(w => (w || 0) + 1);
@@ -1170,7 +1229,7 @@
                 gameRef.child('players').child(myPlayerId).update({ correct: myCorrectCount, damage: myTotalDamage });
                 gameRef.child('questionStats').child(currentQuestionIndex).child('correct').transaction(curr => (curr || 0) + 1);
                 
-                // 🌟 答對極短暫停 0.6 秒後換題
+                // 🌟 僅停留 0.6 秒立刻跳轉
                 setTimeout(() => {
                     currentQuestionIndex++; loadQuestion();
                 }, 600);
